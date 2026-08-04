@@ -1,7 +1,13 @@
 const SHEETS_BASE = "https://sheets.googleapis.com/v4/spreadsheets";
 
 export class SheetsClient {
-  constructor(private spreadsheetId: string, private getToken: () => string) {}
+  private spreadsheetId: string;
+  private getToken: () => string;
+
+  constructor(spreadsheetId: string, getToken: () => string) {
+    this.spreadsheetId = spreadsheetId;
+    this.getToken = getToken;
+  }
 
   async getValues(sheetName: string, range = "A2:Z1000"): Promise<string[][]> {
     const url = `${SHEETS_BASE}/${this.spreadsheetId}/values/${encodeURIComponent(`${sheetName}!${range}`)}`;
