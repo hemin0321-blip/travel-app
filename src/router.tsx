@@ -6,6 +6,8 @@ import { TodayScreen } from "./screens/TodayScreen";
 import { ChecklistScreen } from "./screens/ChecklistScreen";
 import { TripFormScreen } from "./screens/forms/TripFormScreen";
 import { SegmentFormScreen } from "./screens/forms/SegmentFormScreen";
+import { ItineraryItemFormScreen } from "./screens/forms/ItineraryItemFormScreen";
+import { ChecklistItemFormScreen } from "./screens/forms/ChecklistItemFormScreen";
 
 export const router = createBrowserRouter([
   {
@@ -18,6 +20,8 @@ export const router = createBrowserRouter([
       { path: "trips/:tripId/checklist", element: <ChecklistScreen /> },
       { path: "trips/new", element: <TripFormScreen /> },
       { path: "trips/:tripId/segments/new", element: <SegmentFormScreen /> },
+      { path: "segments/:segmentId/items/new", element: <ItineraryItemFormScreen /> },
+      { path: "trips/:tripId/checklist/new", element: <ChecklistItemFormScreen /> },
     ],
   },
 ]);
