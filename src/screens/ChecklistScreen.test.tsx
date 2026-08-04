@@ -20,5 +20,6 @@ describe("ChecklistList", () => {
     const onToggle = vi.fn();
     render(<ChecklistList items={items} online={true} onToggle={onToggle} />);
     screen.getByRole("checkbox").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(onToggle).toHaveBeenCalledWith("c1", true);
   });
 });
