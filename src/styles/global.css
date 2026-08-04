@@ -26,3 +26,53 @@ button { font-family: inherit; }
   color: var(--surface);
   background: var(--pine);
 }
+
+.status-badge {
+  display: inline-block;
+  font-size: 0.64rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--ink-muted);
+}
+.status-badge--진행중 {
+  background: var(--pine);
+  color: var(--surface);
+}
+
+.segment-cover {
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  margin-bottom: 16px;
+  position: relative;
+}
+.segment-cover__panel {
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  color: var(--ink);
+}
+.segment-cover__place {
+  font-weight: 800;
+  font-size: 1.0rem;
+  margin: 0;
+}
+.segment-cover__dates {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+  margin: 4px 0 0;
+}
+.segment-cover__expand {
+  position: absolute;
+  right: 12px;
+  bottom: -14px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: var(--pine);
+  color: var(--surface);
+}
