@@ -7,6 +7,9 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
+      workbox: {
+        globPatterns: ["**/*.{js,css,html,svg,png,ico}"],
+      },
       manifest: {
         name: "여행 앱",
         short_name: "여행",
