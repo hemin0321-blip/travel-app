@@ -22,13 +22,25 @@ export function TripOverviewScreen() {
       if (cached) setSegments(cached.segments);
       return;
     }
+    let cancelled = false;
     const client = new SheetsClient(import.meta.env.VITE_SHEET_ID, () => token);
-    client.getValues("구간").then((rows) => {
-      const all = parseSegments(rows);
-      const forTrip = all.filter((s) => s.tripId === tripId).sort((a, b) => a.order - b.order);
-      setSegments(forTrip);
-      saveItineraryCache(tripId, forTrip, loadItineraryCache(tripId)?.items ?? []);
-    });
+    client
+      .getValues("구간")
+      .then((rows) => {
+        if (cancelled) return;
+        const all = parseSegments(rows);
+        const forTrip = all.filter((s) => s.tripId === tripId).sort((a, b) => a.order - b.order);
+        setSegments(forTrip);
+        saveItineraryCache(tripId, forTrip, loadItineraryCache(tripId)?.items ?? []);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        const cached = loadItineraryCache(tripId);
+        if (cached) setSegments(cached.segments);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [tripId, online, getValidToken]);
 
   return (
