@@ -15,7 +15,9 @@ export function TripListScreen() {
     const token = getValidToken();
     if (!token) return;
     const client = new SheetsClient(import.meta.env.VITE_SHEET_ID, () => token);
-    client.getValues("여행").then((rows) => setTrips(parseTrips(rows)));
+    client.getValues("여행").then((rows) => setTrips(parseTrips(rows))).catch((error) => {
+      console.error("Failed to fetch trips:", error);
+    });
   }, [getValidToken]);
 
   if (!isSignedIn) {
