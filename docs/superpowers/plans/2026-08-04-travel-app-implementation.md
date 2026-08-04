@@ -1183,18 +1183,24 @@ Expected: FAIL — `./BottomNav` 모듈이 없음
 - [ ] **Step 3: 구현 — `src/components/BottomNav.tsx`**
 
 ```tsx
-import { NavLink } from "react-router-dom";
+import { NavLink, useParams } from "react-router-dom";
 
 export function BottomNav() {
+  const { tripId } = useParams<{ tripId?: string }>();
+  const todayHref = tripId ? `/trips/${tripId}/today` : "/";
+  const checklistHref = tripId ? `/trips/${tripId}/checklist` : "/";
+
   return (
     <nav className="bottom-nav">
       <NavLink to="/" className="bottom-nav__item">여행목록</NavLink>
-      <NavLink to="/today" className="bottom-nav__item">전체일정</NavLink>
-      <NavLink to="/checklist" className="bottom-nav__item">체크리스트</NavLink>
+      <NavLink to={todayHref} className="bottom-nav__item">전체일정</NavLink>
+      <NavLink to={checklistHref} className="bottom-nav__item">체크리스트</NavLink>
     </nav>
   );
 }
 ```
+
+> **계획 수정 (구현 중 발견)**: 원래 이 브리프는 `/today`, `/checklist`라는 루트 경로로 링크했지만, router.tsx의 실제 라우트는 `trips/:tripId/today`, `trips/:tripId/checklist`로만 정의돼 있어 두 탭이 어떤 라우트에도 매치되지 않는 불일치가 있었다. 위 코드는 `useParams`로 현재 tripId를 읽어 해당 여행의 오늘/체크리스트 경로로 연결하고, tripId가 없을 때(여행 목록 화면)는 `/`로 안전하게 대체하도록 고쳤다.
 
 CSS (`src/styles/global.css`에 추가):
 
