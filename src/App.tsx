@@ -1,11 +1,11 @@
-import { useGoogleAuth } from "./hooks/useGoogleAuth";
+import { Outlet } from "react-router-dom";
+import { BottomNav } from "./components/BottomNav";
 
 function App() {
-  const { signIn, isSignedIn } = useGoogleAuth(import.meta.env.VITE_GOOGLE_CLIENT_ID);
   return (
-    <div>
-      <button onClick={signIn}>구글 로그인</button>
-      <p>{isSignedIn ? "로그인됨" : "로그인 안 됨"}</p>
+    <div className="app-shell">
+      <Outlet />
+      <BottomNav />
     </div>
   );
 }
