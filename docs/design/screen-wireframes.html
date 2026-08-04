@@ -1,0 +1,287 @@
+<style>
+  /* Pure structural wireframe: grayscale only, no color/gradient/shadow-as-design.
+     Purpose: validate layout & information hierarchy before visual design is applied. */
+  :root{
+    --bg:#F6F6F5; --surface:#FFFFFF; --line:#B9B9B7; --line-soft:#E2E1DE;
+    --ink:#161615; --ink-muted:#7A7A78; --ph:#EDEDEB;
+    --font:system-ui,-apple-system,"Malgun Gothic",sans-serif;
+    --mono:ui-monospace,"SF Mono","Consolas",monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#17171A; --surface:#222225; --line:#4A4A4E; --line-soft:#333336; --ink:#EDEDED; --ink-muted:#9C9C9E; --ph:#2C2C2F; }
+  }
+  :root[data-theme="dark"]{ --bg:#17171A; --surface:#222225; --line:#4A4A4E; --line-soft:#333336; --ink:#EDEDED; --ink-muted:#9C9C9E; --ph:#2C2C2F; }
+  :root[data-theme="light"]{ --bg:#F6F6F5; --surface:#FFFFFF; --line:#B9B9B7; --line-soft:#E2E1DE; --ink:#161615; --ink-muted:#7A7A78; --ph:#EDEDEB; }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--ink); font-family:var(--font); line-height:1.5; }
+  :focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:.001ms !important; transition-duration:.001ms !important; } }
+
+  .page{ max-width:1280px; margin:0 auto; padding:clamp(20px,4vw,44px) clamp(16px,3vw,32px) 60px; }
+  .eyebrow{ font-family:var(--mono); font-size:.7rem; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-muted); font-weight:600; }
+  h1{ font-size:clamp(1.25rem,2.6vw,1.6rem); font-weight:700; margin:6px 0 8px; letter-spacing:-0.01em; }
+  .lede{ max-width:70ch; color:var(--ink-muted); font-size:.92rem; margin:0 0 8px; }
+  .legend-key{ display:flex; flex-wrap:wrap; gap:14px; margin:14px 0 4px; font-size:.76rem; color:var(--ink-muted); border-top:1px solid var(--line-soft); padding-top:12px; }
+  .legend-key span{ display:flex; align-items:center; gap:6px; }
+  .key-box{ width:16px; height:16px; border:1.5px dashed var(--ink-muted); background:var(--ph); flex-shrink:0; }
+  .key-line{ width:16px; height:0; border-top:1.5px dashed var(--ink-muted); flex-shrink:0; }
+
+  .rail{ display:flex; gap:22px; margin-top:30px; overflow-x:auto; padding-bottom:16px; scroll-snap-type:x proximity; }
+  .col{ flex:0 0 auto; width:296px; scroll-snap-align:start; display:flex; flex-direction:column; gap:14px; }
+  .col-title{ font-weight:700; font-size:.9rem; display:flex; align-items:center; gap:8px; }
+  .col-title .step{ font-family:var(--mono); font-size:.68rem; color:var(--ink-muted); }
+
+  .phone-shell{ background:var(--surface); border:1.5px solid var(--line); border-radius:18px; padding:8px; }
+  .phone-notch{ width:56px; height:12px; background:var(--line); border-radius:8px; margin:0 auto 6px; }
+  .phone-screen{ border:1px solid var(--line-soft); border-radius:10px; height:560px; overflow-y:auto; display:flex; flex-direction:column; background:var(--surface); scrollbar-width:thin; }
+
+  .num{ display:inline-flex; align-items:center; justify-content:center; width:15px; height:15px; border-radius:50%; background:var(--ink); color:var(--surface); font-family:var(--mono); font-size:.6rem; font-weight:700; flex-shrink:0; margin-right:5px; }
+
+  .bar{ border-bottom:1px solid var(--line); padding:11px 12px; display:flex; flex-direction:column; gap:8px; }
+  .row{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .btn{ border:1px solid var(--ink); border-radius:6px; padding:4px 9px; font-size:.68rem; font-weight:600; background:none; color:var(--ink); }
+  .toggle{ display:flex; border:1px solid var(--line); border-radius:999px; padding:2px; }
+  .toggle span{ flex:1; text-align:center; font-size:.66rem; padding:4px 6px; color:var(--ink-muted); }
+  .toggle span.on{ background:var(--ink); color:var(--surface); border-radius:999px; }
+  .label{ font-size:.78rem; font-weight:700; }
+  .sub{ font-size:.66rem; color:var(--ink-muted); font-family:var(--mono); }
+
+  .list{ display:flex; flex-direction:column; gap:9px; padding:10px; }
+  .card{ border:1px solid var(--line); border-radius:10px; padding:9px 10px; display:flex; flex-direction:column; gap:6px; }
+  .card.dim{ opacity:.55; }
+  .ph-line{ height:8px; background:var(--ph); border-radius:3px; }
+  .ph-line.w60{ width:60%; } .ph-line.w80{ width:80%; } .ph-line.w40{ width:40%; } .ph-line.w90{ width:90%; }
+  .badge{ font-size:.6rem; border:1px solid var(--line); border-radius:999px; padding:1px 8px; color:var(--ink-muted); font-family:var(--mono); }
+  .cover-ph{ height:64px; border:1px dashed var(--line); border-radius:8px; background:
+      repeating-linear-gradient(45deg,var(--ph),var(--ph) 7px,var(--surface) 7px,var(--surface) 14px);
+      display:flex; align-items:center; justify-content:center; font-size:.62rem; color:var(--ink-muted); font-family:var(--mono); }
+  .park{ border:1px dashed var(--line); border-radius:8px; padding:6px 8px; font-size:.68rem; color:var(--ink-muted); }
+
+  .seq-row{ display:grid; grid-template-columns:14px 1fr; gap:8px; padding:0 12px; }
+  .seq-col{ display:flex; flex-direction:column; align-items:center; }
+  .seq-dot{ width:7px; height:7px; border-radius:50%; background:var(--ink); margin-top:12px; }
+  .seq-line{ flex:1; width:1.5px; background:var(--line); min-height:16px; }
+  .seq-card{ padding:8px 0 12px; display:flex; flex-direction:column; gap:4px; }
+
+  .chk-group{ padding:10px 12px 4px; font-size:.68rem; font-weight:700; color:var(--ink-muted); text-transform:uppercase; letter-spacing:.06em; }
+  .chk-item{ display:flex; align-items:center; gap:8px; padding:7px 12px; border-top:1px solid var(--line-soft); }
+  .chk-box{ width:15px; height:15px; border:1.5px solid var(--ink); border-radius:4px; flex-shrink:0; }
+  .chk-box.on{ background:var(--ink); }
+  .chk-txt{ flex:1; height:8px; background:var(--ph); border-radius:3px; }
+  .chk-owner{ font-size:.6rem; font-family:var(--mono); color:var(--ink-muted); border:1px solid var(--line); border-radius:999px; padding:1px 6px; }
+  .addbar{ margin-top:auto; border-top:1px solid var(--line); padding:10px 12px; }
+
+  .footnav{ margin-top:auto; border-top:1px solid var(--line); display:flex; justify-content:space-around; padding:8px 4px; }
+  .footnav .item{ display:flex; flex-direction:column; align-items:center; gap:3px; font-size:.58rem; color:var(--ink-muted); }
+  .footnav .item.on{ color:var(--ink); font-weight:700; }
+  .navbox{ width:16px; height:16px; border:1.3px solid currentColor; border-radius:4px; }
+
+  .legend{ display:flex; flex-direction:column; gap:5px; font-size:.72rem; color:var(--ink-muted); border-top:1px dashed var(--line-soft); padding-top:10px; }
+  .legend b{ color:var(--ink); font-weight:700; }
+</style>
+
+<main class="page">
+  <span class="eyebrow">여행 앱 · 정보구조 검토용</span>
+  <h1>주요 화면 와이어프레임 (디자인 없음)</h1>
+  <p class="lede">색상·타이포·장식 없이 레이아웃과 정보 위계만 확인하기 위한 저충실도(low-fidelity) 와이어프레임입니다. 실선 박스는 실제 컨테이너, 대각선 해치 박스는 "여기 뭔가 들어갈 자리(커버/이미지 영역)"라는 표시일 뿐 실제 이미지가 아닙니다. 번호는 각 화면 아래 범례와 대응합니다.</p>
+  <div class="legend-key">
+    <span><i class="key-box"></i>플레이스홀더 영역</span>
+    <span><i class="key-line"></i>텍스트 자리(실제 문구 아님)</span>
+    <span><span class="num">n</span>범례 번호</span>
+  </div>
+
+  <div class="rail">
+
+    <!-- Screen 1: 여행 목록 -->
+    <div class="col">
+      <div class="col-title"><span class="step">01</span> 여행 목록</div>
+      <div class="phone-shell">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="bar">
+            <div class="row">
+              <span class="label"><span class="num">1</span>내 여행</span>
+              <button class="btn">+ 새 여행</button>
+            </div>
+          </div>
+          <div class="list">
+            <div class="card">
+              <div class="row">
+                <span class="ph-line w60"></span>
+                <span class="badge"><span class="num">2</span>진행중</span>
+              </div>
+              <span class="sub">2026.08.02 – 08.04</span>
+            </div>
+            <div class="card dim">
+              <div class="row">
+                <span class="ph-line w40"></span>
+                <span class="badge">예정</span>
+              </div>
+              <span class="sub">2026.10.10 – 10.13</span>
+            </div>
+            <div class="card dim">
+              <div class="row">
+                <span class="ph-line w80"></span>
+                <span class="badge">완료</span>
+              </div>
+              <span class="sub">2025.12.24 – 12.26</span>
+            </div>
+          </div>
+          <div class="footnav">
+            <span class="item on"><span class="navbox"></span>여행목록</span>
+            <span class="item"><span class="navbox"></span>전체일정</span>
+            <span class="item"><span class="navbox"></span>체크리스트</span>
+          </div>
+        </div>
+      </div>
+      <div class="legend">
+        <div><span class="num">1</span><b>목록 타이틀</b> — 전체 여행 건수/새 여행 추가 진입점</div>
+        <div><span class="num">2</span><b>상태 배지</b> — 진행중/예정/완료. 진행중 항목은 강조, 나머지는 흐리게(dim) 표시</div>
+        <div>카드 탭 → 해당 여행의 "전체 여정 개요"로 이동. 진행중 여행이 있으면 앱 실행 시 이 목록을 건너뛰고 바로 그 여행으로 이동(US2)</div>
+      </div>
+    </div>
+
+    <!-- Screen 2: 전체 여정 개요 -->
+    <div class="col">
+      <div class="col-title"><span class="step">02</span> 전체 여정 개요 (메인)</div>
+      <div class="phone-shell">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="bar">
+            <div class="row"><span class="label"><span class="num">1</span>제주도 가족여행</span></div>
+            <span class="sub">2026.08.02 – 08.04 · 2박 3일</span>
+            <div class="toggle"><span class="num">2</span><span class="on">전체 여정</span><span>오늘</span></div>
+          </div>
+          <div class="list">
+            <div class="card">
+              <div class="cover-ph"><span class="num">3</span>커버 영역</div>
+              <div class="row"><span class="ph-line w40"></span><span class="badge">1박</span></div>
+              <span class="ph-line w60"></span>
+              <span class="sub"><span class="num">4</span>제주시티호텔 · 노형동 123-4</span>
+              <div class="park"><span class="num">5</span>주차: 호텔 지하 무료 (내국인)</div>
+            </div>
+            <div class="card">
+              <div class="cover-ph">커버 영역</div>
+              <div class="row"><span class="ph-line w40"></span><span class="badge">2박</span></div>
+              <span class="ph-line w60"></span>
+              <span class="sub">오션뷰 펜션 · 성산리 88</span>
+              <div class="park">주차: 앞마당 무료, 만차 시 공영주차장</div>
+            </div>
+          </div>
+          <div class="seq-row">
+            <div class="seq-col"><span class="seq-dot"></span><span class="seq-line"></span></div>
+            <div class="seq-card"><span class="num">6</span><span class="ph-line w80"></span><span class="sub">순서① 성산일출봉 관람</span></div>
+          </div>
+          <div class="seq-row">
+            <div class="seq-col"><span class="seq-dot"></span><span class="seq-line"></span></div>
+            <div class="seq-card"><span class="ph-line w60"></span><span class="sub"><span class="num">7</span>순서② 주차 정보 (강조)</span></div>
+          </div>
+          <div class="seq-row">
+            <div class="seq-col"><span class="seq-dot"></span></div>
+            <div class="seq-card"><span class="ph-line w90"></span><span class="sub">순서③ 점심 식당</span></div>
+          </div>
+          <div class="footnav">
+            <span class="item"><span class="navbox"></span>여행목록</span>
+            <span class="item on"><span class="navbox"></span>전체일정</span>
+            <span class="item"><span class="navbox"></span>체크리스트</span>
+          </div>
+        </div>
+      </div>
+      <div class="legend">
+        <div><span class="num">1</span>여행명 + 전체 기간</div>
+        <div><span class="num">2</span><b>뷰 토글</b> — 전체 여정(구간별 개요) / 오늘(당일만)</div>
+        <div><span class="num">3</span>구간 커버 영역 — 시각 디자인 적용 예정 자리</div>
+        <div><span class="num">4</span>숙소명 + 주소 (탭 시 지도 연결, US7)</div>
+        <div><span class="num">5</span>주차 정보 — 위치/요금/특이사항 (US9)</div>
+        <div><span class="num">6</span>카드 탭 시 펼쳐지는 <b>순서 기반</b> 타임라인 — 시각(HH:MM) 없음, 카드 순서 = 방문 순서</div>
+        <div><span class="num">7</span>주차 항목은 구간과 무관하게 항상 시각적으로 구분되는 자리(디자인 단계에서 골드로 고정)</div>
+      </div>
+    </div>
+
+    <!-- Screen 3: 오늘 일정 -->
+    <div class="col">
+      <div class="col-title"><span class="step">03</span> 오늘 일정</div>
+      <div class="phone-shell">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="bar">
+            <div class="row"><span class="label">제주도 가족여행</span><span class="badge"><span class="num">1</span>오프라인</span></div>
+            <span class="sub"><span class="num">2</span>오늘 · 08.03 (2일차)</span>
+            <div class="toggle"><span>전체 여정</span><span class="on">오늘</span></div>
+          </div>
+          <div class="list">
+            <div class="card">
+              <div class="row"><span class="ph-line w60"></span><span class="badge">2박</span></div>
+              <span class="sub"><span class="num">3</span>오늘 머무는 곳: 오션뷰 펜션</span>
+            </div>
+          </div>
+          <div class="seq-row">
+            <div class="seq-col"><span class="seq-dot"></span><span class="seq-line"></span></div>
+            <div class="seq-card"><span class="num">4</span><span class="ph-line w80"></span><span class="sub">순서① 성산일출봉 관람 · 주소/메모</span></div>
+          </div>
+          <div class="seq-row">
+            <div class="seq-col"><span class="seq-dot"></span><span class="seq-line"></span></div>
+            <div class="seq-card"><span class="ph-line w60"></span><span class="sub">순서② 주차 정보</span></div>
+          </div>
+          <div class="seq-row">
+            <div class="seq-col"><span class="seq-dot"></span><span class="seq-line"></span></div>
+            <div class="seq-card"><span class="ph-line w90"></span><span class="sub">순서③ 점심 식당</span></div>
+          </div>
+          <div class="seq-row">
+            <div class="seq-col"><span class="seq-dot"></span></div>
+            <div class="seq-card"><span class="ph-line w70"></span><span class="sub">순서④ 숙소 체크인</span></div>
+          </div>
+          <div class="footnav">
+            <span class="item"><span class="navbox"></span>여행목록</span>
+            <span class="item on"><span class="navbox"></span>전체일정</span>
+            <span class="item"><span class="navbox"></span>체크리스트</span>
+          </div>
+        </div>
+      </div>
+      <div class="legend">
+        <div><span class="num">1</span><b>오프라인 상태 배지</b> — 데이터가 최신이 아닐 수 있음을 인지시킴 (US11)</div>
+        <div><span class="num">2</span>오늘 날짜 + 여행 며칠차인지</div>
+        <div><span class="num">3</span>오늘 묵는 숙소 요약 (구간 정보 축약)</div>
+        <div><span class="num">4</span>오늘 항목만 필터링한 동일한 순서 기반 타임라인 (화면 02와 같은 카드 컴포넌트 재사용)</div>
+      </div>
+    </div>
+
+    <!-- Screen 4: 체크리스트 -->
+    <div class="col">
+      <div class="col-title"><span class="step">04</span> 준비물 체크리스트</div>
+      <div class="phone-shell">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="bar">
+            <div class="row"><span class="label"><span class="num">1</span>준비물 체크리스트</span></div>
+            <span class="sub">제주도 가족여행</span>
+          </div>
+          <div class="chk-group"><span class="num">2</span>필수 서류</div>
+          <div class="chk-item"><span class="chk-box on"></span><span class="chk-txt"></span><span class="chk-owner"><span class="num">3</span>혜민</span></div>
+          <div class="chk-item"><span class="chk-box"></span><span class="chk-txt"></span><span class="chk-owner">민재</span></div>
+          <div class="chk-group">의류</div>
+          <div class="chk-item"><span class="chk-box on"></span><span class="chk-txt"></span><span class="chk-owner">공통</span></div>
+          <div class="chk-item"><span class="chk-box"></span><span class="chk-txt"></span><span class="chk-owner">공통</span></div>
+          <div class="chk-item"><span class="chk-box"></span><span class="chk-txt"></span><span class="chk-owner">공통</span></div>
+          <div class="chk-group">전자기기</div>
+          <div class="chk-item"><span class="chk-box"></span><span class="chk-txt"></span><span class="chk-owner">민재</span></div>
+          <div class="addbar"><button class="btn"><span class="num">4</span>+ 항목 추가</button></div>
+          <div class="footnav">
+            <span class="item"><span class="navbox"></span>여행목록</span>
+            <span class="item"><span class="navbox"></span>전체일정</span>
+            <span class="item on"><span class="navbox"></span>체크리스트</span>
+          </div>
+        </div>
+      </div>
+      <div class="legend">
+        <div><span class="num">1</span>여행별 체크리스트 (여행마다 별도, US12)</div>
+        <div><span class="num">2</span>카테고리 그룹 — 서류/의류/전자기기 등으로 묶어서 표시</div>
+        <div><span class="num">3</span>담당자 태그 — 혜민/민재/공통 중 누가 챙기는 항목인지</div>
+        <div><span class="num">4</span>항목 추가 — 앱에서 직접 추가/체크 가능 (US13)</div>
+      </div>
+    </div>
+
+  </div>
+</main>

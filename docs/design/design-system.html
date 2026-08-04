@@ -1,0 +1,307 @@
+<style>
+  :root{
+    --bg:#FFFCF7; --surface:#FFFFFF; --surface-2:#F1F4F3;
+    --ink:#122B2D; --ink-muted:#66807E; --line:#EDE7DA;
+    --pine:#FF6B00; --pine-strong:#006D77;
+    --amber:#FFB703; --amber-soft:#FFF4DC; --sage:#00B8D9;
+    --seg-a:#FF6B00; --seg-a2:#FFB703;
+    --seg-b:#00B8D9; --seg-b2:#006D77;
+    --seg-c:#006D77; --seg-c2:#122B2D;
+    --shadow: 0 20px 40px -22px rgba(15,50,52,.20);
+    --radius-lg:26px; --radius-md:22px; --radius-sm:10px;
+    --font-display:"Apple SD Gothic Neo","Malgun Gothic","Pretendard",system-ui,sans-serif;
+    --font-body:"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+    --font-mono:"JetBrains Mono","SF Mono",ui-monospace,"Consolas",monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0B1B1D; --surface:#122A2C; --surface-2:#1A3535; --ink:#EAF3F2;
+      --ink-muted:#8FADAC; --line:#234342; --pine:#FF7A2E; --pine-strong:#37D6C4;
+      --amber:#FFC94D; --amber-soft:#3A2A12; --sage:#33C8E8;
+      --seg-a:#FF7A2E; --seg-a2:#FFC94D; --seg-b:#33C8E8; --seg-b2:#37D6C4; --seg-c:#37D6C4; --seg-c2:#0B1B1D;
+      --shadow: 0 20px 40px -22px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0B1B1D; --surface:#122A2C; --surface-2:#1A3535; --ink:#EAF3F2;
+    --ink-muted:#8FADAC; --line:#234342; --pine:#FF7A2E; --pine-strong:#37D6C4;
+    --amber:#FFC94D; --amber-soft:#3A2A12; --sage:#33C8E8;
+    --seg-a:#FF7A2E; --seg-a2:#FFC94D; --seg-b:#33C8E8; --seg-b2:#37D6C4; --seg-c:#37D6C4; --seg-c2:#0B1B1D;
+    --shadow: 0 20px 40px -22px rgba(0,0,0,.5);
+  }
+  :root[data-theme="light"]{
+    --bg:#FFFCF7; --surface:#FFFFFF; --surface-2:#F1F4F3; --ink:#122B2D;
+    --ink-muted:#66807E; --line:#EDE7DA; --pine:#FF6B00; --pine-strong:#006D77;
+    --amber:#FFB703; --amber-soft:#FFF4DC; --sage:#00B8D9;
+    --seg-a:#FF6B00; --seg-a2:#FFB703; --seg-b:#00B8D9; --seg-b2:#006D77; --seg-c:#006D77; --seg-c2:#122B2D;
+    --shadow: 0 20px 40px -22px rgba(15,50,52,.20);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:linear-gradient(180deg,var(--bg) 0%,var(--surface-2) 65%,var(--bg) 100%); color:var(--ink); font-family:var(--font-body); line-height:1.55; -webkit-font-smoothing:antialiased; }
+  :focus-visible{ outline:2px solid var(--pine); outline-offset:2px; }
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:.001ms !important; transition-duration:.001ms !important; } }
+
+  .page{ max-width:1080px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,40px) 80px; display:flex; flex-direction:column; gap:44px; }
+  .eyebrow{ font-family:var(--font-mono); font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--pine); font-weight:600; }
+  h1{ font-family:var(--font-display); font-weight:800; font-size:clamp(1.4rem,3vw,2rem); margin:6px 0 8px; letter-spacing:-0.01em; }
+  .lede{ max-width:70ch; color:var(--ink-muted); font-size:.94rem; margin:0; }
+
+  section{ display:flex; flex-direction:column; gap:16px; }
+  .sec-head{ display:flex; align-items:baseline; gap:10px; border-bottom:1px dashed var(--line); padding-bottom:10px; }
+  .sec-num{ font-family:var(--font-mono); font-size:.72rem; color:var(--pine); font-weight:700; }
+  .sec-title{ font-family:var(--font-display); font-weight:800; font-size:1.05rem; }
+  .sec-note{ font-size:.82rem; color:var(--ink-muted); max-width:68ch; margin-top:-6px; }
+
+  /* color grid */
+  .color-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px; }
+  .swatch-card{ background:var(--surface); border:1px solid var(--line); border-radius:16px; overflow:hidden; box-shadow:var(--shadow); }
+  .swatch-fill{ height:56px; }
+  .swatch-meta{ padding:10px 12px 12px; display:flex; flex-direction:column; gap:3px; }
+  .swatch-name{ font-weight:700; font-size:.82rem; }
+  .swatch-var{ font-family:var(--font-mono); font-size:.68rem; color:var(--pine-strong); }
+  .swatch-hex{ font-family:var(--font-mono); font-size:.68rem; color:var(--ink-muted); }
+  .swatch-use{ font-size:.72rem; color:var(--ink-muted); margin-top:4px; }
+
+  .dark-map{ width:100%; border-collapse:collapse; font-size:.78rem; }
+  .dark-map th,.dark-map td{ text-align:left; padding:7px 10px; border-bottom:1px solid var(--line); }
+  .dark-map th{ color:var(--ink-muted); font-weight:600; font-size:.7rem; text-transform:uppercase; letter-spacing:.04em; }
+  .dark-map td.mono{ font-family:var(--font-mono); }
+  .dot{ display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:middle; }
+
+  /* type scale */
+  .type-row{ display:flex; align-items:baseline; gap:16px; padding:12px 0; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  .type-row:last-child{ border-bottom:none; }
+  .type-tag{ font-family:var(--font-mono); font-size:.66rem; color:var(--pine); width:150px; flex-shrink:0; }
+  .t-h1{ font-family:var(--font-display); font-weight:800; font-size:1.7rem; letter-spacing:-0.01em; }
+  .t-title{ font-family:var(--font-display); font-weight:800; font-size:1.1rem; }
+  .t-body{ font-weight:700; font-size:.84rem; }
+  .t-meta{ font-size:.74rem; color:var(--ink-muted); }
+  .t-micro{ font-size:.66rem; font-weight:700; color:var(--pine-strong); }
+  .t-mono{ font-family:var(--font-mono); font-weight:700; font-size:.72rem; color:var(--ink); }
+  .font-stack-row{ font-size:.78rem; color:var(--ink-muted); }
+  .font-stack-row b{ color:var(--ink); font-family:var(--font-mono); font-weight:600; font-size:.74rem; }
+
+  /* radius & shadow */
+  .scale-row{ display:flex; gap:20px; flex-wrap:wrap; }
+  .scale-item{ display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .radius-box{ width:76px; height:76px; background:var(--pine); }
+  .shadow-box{ width:110px; height:76px; background:var(--surface); border:1px solid var(--line); box-shadow:var(--shadow); border-radius:16px; }
+  .scale-label{ font-family:var(--font-mono); font-size:.68rem; color:var(--ink-muted); text-align:center; }
+
+  /* component gallery */
+  .comp-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:18px; align-items:start; }
+  .comp-card{ display:flex; flex-direction:column; gap:8px; }
+  .comp-label{ font-family:var(--font-mono); font-size:.68rem; color:var(--ink-muted); }
+  .comp-frame{ background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:14px; box-shadow:var(--shadow); }
+
+  .ic{ width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0; }
+
+  /* mini segment cover */
+  .mini-segment{ border-radius:18px; overflow:hidden; box-shadow:0 12px 24px -14px rgba(18,43,45,.3); }
+  .mini-cover{ position:relative; overflow:hidden; padding:12px 14px 30px; background:linear-gradient(135deg,var(--seg,var(--pine)) 0%,var(--seg2,var(--amber)) 100%); }
+  .mini-cover .ghost{ position:absolute; right:8px; bottom:2px; width:44px; height:44px; color:rgba(255,255,255,.32); stroke-width:1.3; }
+  .mini-top{ display:flex; gap:6px; position:relative; z-index:1; }
+  .mini-date{ font-family:var(--font-mono); font-size:.66rem; font-weight:700; color:#fff; background:rgba(255,255,255,.24); padding:2px 8px; border-radius:999px; }
+  .mini-nights{ font-size:.6rem; font-weight:800; color:var(--seg,var(--pine)); background:#fff; padding:2px 8px; border-radius:999px; }
+  .mini-city{ font-family:var(--font-display); font-weight:800; font-size:1rem; color:#fff; margin-top:8px; position:relative; z-index:1; }
+  .mini-panel{ position:relative; background:var(--surface); margin-top:-20px; border-radius:16px 16px 0 0; padding:14px 13px 12px; z-index:1; }
+  .mini-chev{ position:absolute; top:-14px; right:12px; width:28px; height:28px; border-radius:50%; background:var(--surface); box-shadow:0 6px 14px -6px rgba(18,43,45,.3); display:flex; align-items:center; justify-content:center; color:var(--seg,var(--pine)); }
+  .mini-stay{ display:flex; align-items:center; gap:6px; font-size:.78rem; font-weight:600; }
+  .mini-stay .ic{ color:var(--seg,var(--pine)); }
+  .mini-park{ display:flex; align-items:flex-start; gap:6px; font-size:.7rem; color:var(--pine-strong); background:var(--amber-soft); border-radius:9px; padding:7px 8px; margin-top:6px; }
+  .mini-park .ic{ color:var(--pine-strong); margin-top:1px; }
+
+  /* timeline */
+  .seq-row{ display:grid; grid-template-columns:16px 1fr; gap:9px; }
+  .seq-col{ display:flex; flex-direction:column; align-items:center; }
+  .seq-dot{ width:8px; height:8px; border-radius:50%; background:var(--seg,var(--pine)); margin-top:12px; flex-shrink:0; }
+  .seq-line{ flex:1; width:2px; background:var(--line); min-height:18px; }
+  .seq-card{ padding:8px 0 12px; }
+  .seq-place{ font-weight:700; font-size:.8rem; display:flex; align-items:center; gap:6px; }
+  .seq-place .ic{ color:var(--seg,var(--pine)); }
+  .seq-chip{ font-size:.62rem; background:var(--surface-2); padding:2px 8px; border-radius:999px; color:var(--pine-strong); display:inline-flex; align-items:center; gap:4px; margin-top:5px; }
+  .seq-card.parking{ background:var(--amber-soft); color:var(--pine-strong); border-radius:11px; padding:8px 9px 10px; margin-top:-4px; }
+
+  /* hero + nav fragments */
+  .mini-hero{ position:relative; overflow:hidden; border-radius:18px; padding:14px 14px 30px; background:linear-gradient(135deg,var(--pine) 0%,var(--amber) 100%); }
+  .mini-hero::after{ content:""; position:absolute; right:-24px; top:-28px; width:100px; height:100px; background:rgba(255,255,255,.16); border-radius:50%; }
+  .mini-hero .tn{ font-family:var(--font-display); font-weight:800; color:#fff; font-size:.92rem; position:relative; z-index:1; }
+  .mini-hero .tr{ font-family:var(--font-mono); font-size:.64rem; color:rgba(255,255,255,.88); position:relative; z-index:1; }
+  .mini-toggle{ display:flex; background:rgba(255,255,255,.24); border-radius:999px; padding:3px; gap:2px; position:relative; z-index:1; margin:6px 0 -22px; box-shadow:0 10px 20px -10px rgba(18,43,45,.4); }
+  .mini-toggle span{ flex:1; text-align:center; padding:5px 8px; border-radius:999px; font-size:.68rem; font-weight:700; color:rgba(255,255,255,.85); }
+  .mini-toggle span.on{ background:#fff; color:var(--pine); }
+
+  .mini-nav{ background:var(--surface); border:1px solid var(--line); border-radius:16px; display:flex; justify-content:space-around; padding:10px 6px; box-shadow:var(--shadow); }
+  .mini-nav .item{ display:flex; flex-direction:column; align-items:center; gap:3px; font-size:.6rem; color:var(--ink-muted); font-weight:600; }
+  .mini-nav .item.on{ color:var(--pine); }
+  .mini-nav .item.on .ic{ background:var(--pine); color:#fff; border-radius:10px; padding:5px; width:16px; height:16px; }
+
+  .chip-row{ display:flex; flex-wrap:wrap; gap:8px; }
+  .rule-list{ display:flex; flex-direction:column; gap:10px; }
+  .rule{ display:flex; gap:10px; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:12px 14px; font-size:.84rem; box-shadow:var(--shadow); }
+  .rule .n{ font-family:var(--font-mono); font-weight:800; color:var(--pine); flex-shrink:0; }
+  .rule b{ display:block; margin-bottom:2px; }
+  .rule span.d{ color:var(--ink-muted); font-size:.8rem; }
+
+  .status-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
+  .status-card{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:12px 14px; display:flex; flex-direction:column; gap:4px; box-shadow:var(--shadow); }
+  .status-card .name{ font-weight:700; font-size:.86rem; }
+  .status-pill{ font-family:var(--font-mono); font-size:.62rem; font-weight:700; padding:2px 9px; border-radius:999px; width:fit-content; }
+  .status-pill.done{ background:var(--amber-soft); color:var(--pine-strong); }
+  .status-pill.wip{ background:var(--surface-2); color:var(--ink-muted); }
+</style>
+
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="ic-bed" viewBox="0 0 24 24"><path d="M3 18v-6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/><path d="M3 18v3M21 21v-6a2 2 0 0 0-2-2h-6"/><path d="M3 15h18v3"/></symbol>
+  <symbol id="ic-car" viewBox="0 0 24 24"><path d="M4 16V11l2-5h12l2 5v5"/><path d="M2 16h20"/><circle cx="7" cy="17.5" r="1.6"/><circle cx="17" cy="17.5" r="1.6"/></symbol>
+  <symbol id="ic-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="ic-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+  <symbol id="ic-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+  <symbol id="ic-check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></symbol>
+</svg>
+
+<main class="page">
+
+  <header>
+    <span class="eyebrow">여행 앱 · Design System v1</span>
+    <h1>지금까지 확정된 디자인을 정리한 시스템</h1>
+    <p class="lede">색상 실험(파스텔 → 민트오렌지 → 5색 고정 → 화이트+구간컬러 → Klook 그라디언트)을 거쳐 확정된 토큰과 컴포넌트, 그리고 앞으로도 지켜야 할 디자인 규칙을 한 문서로 모았습니다. 앱을 계속 만들어가면서 이 문서를 기준으로 색/컴포넌트를 재사용하면 됩니다.</p>
+  </header>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">01</span><span class="sec-title">컬러</span></div>
+    <p class="sec-note">배경은 완전한 흰색이 아니라 아주 옅은 웜톤(<code>--bg</code>)이고, 카드 표면만 순백(<code>--surface</code>)입니다. 구간(숙소 단위) 색은 항상 2색 그라디언트로 쓰고, 주차는 구간과 무관하게 항상 골드로 고정합니다.</p>
+    <div class="color-grid">
+      <div class="swatch-card"><div class="swatch-fill" style="background:linear-gradient(135deg,#FF6B00,#FFB703)"></div><div class="swatch-meta"><span class="swatch-name">구간 A</span><span class="swatch-var">--seg-a → --seg-a2</span><span class="swatch-hex">#FF6B00 → #FFB703</span><span class="swatch-use">숙소/구간 1번째 색. 커버 그라디언트, 날짜배지, 타임라인 점</span></div></div>
+      <div class="swatch-card"><div class="swatch-fill" style="background:linear-gradient(135deg,#00B8D9,#006D77)"></div><div class="swatch-meta"><span class="swatch-name">구간 B</span><span class="swatch-var">--seg-b → --seg-b2</span><span class="swatch-hex">#00B8D9 → #006D77</span><span class="swatch-use">숙소/구간 2번째 색. A와 번갈아 사용해 구간을 구분</span></div></div>
+      <div class="swatch-card"><div class="swatch-fill" style="background:linear-gradient(135deg,#006D77,#122B2D)"></div><div class="swatch-meta"><span class="swatch-name">구간 C</span><span class="swatch-var">--seg-c → --seg-c2</span><span class="swatch-hex">#006D77 → #122B2D</span><span class="swatch-use">숙소/구간 3번째 색. 이후 구간은 A→B→C 순환</span></div></div>
+      <div class="swatch-card"><div class="swatch-fill" style="background:#FFB703"></div><div class="swatch-meta"><span class="swatch-name">Gold · 주차 전용</span><span class="swatch-var">--amber / --amber-soft</span><span class="swatch-hex">#FFB703 / #FFF4DC</span><span class="swatch-use">주차 카드/점. 구간 색이 바뀌어도 항상 이 색으로 고정</span></div></div>
+      <div class="swatch-card"><div class="swatch-fill" style="background:#FF6B00"></div><div class="swatch-meta"><span class="swatch-name">Primary</span><span class="swatch-var">--pine</span><span class="swatch-hex">#FF6B00</span><span class="swatch-use">히어로 배너, 토글/네비 활성 상태, 버튼</span></div></div>
+      <div class="swatch-card"><div class="swatch-fill" style="background:#006D77"></div><div class="swatch-meta"><span class="swatch-name">Teal Strong</span><span class="swatch-var">--pine-strong</span><span class="swatch-hex">#006D77</span><span class="swatch-use">주차 텍스트/아이콘 전용 진한 색</span></div></div>
+      <div class="swatch-card"><div class="swatch-fill" style="background:#122B2D"></div><div class="swatch-meta"><span class="swatch-name">Ink</span><span class="swatch-var">--ink</span><span class="swatch-hex">#122B2D</span><span class="swatch-use">본문 텍스트</span></div></div>
+      <div class="swatch-card"><div class="swatch-fill" style="background:#66807E"></div><div class="swatch-meta"><span class="swatch-name">Ink Muted</span><span class="swatch-var">--ink-muted</span><span class="swatch-hex">#66807E</span><span class="swatch-use">보조 텍스트, 메타 정보</span></div></div>
+      <div class="swatch-card"><div class="swatch-fill" style="background:#FFFCF7;border-bottom:1px solid #EDE7DA"></div><div class="swatch-meta"><span class="swatch-name">Background</span><span class="swatch-var">--bg</span><span class="swatch-hex">#FFFCF7</span><span class="swatch-use">화면/페이지 배경 (완전 흰색 아님)</span></div></div>
+      <div class="swatch-card"><div class="swatch-fill" style="background:#FFFFFF;border-bottom:1px solid #EDE7DA"></div><div class="swatch-meta"><span class="swatch-name">Surface</span><span class="swatch-var">--surface</span><span class="swatch-hex">#FFFFFF</span><span class="swatch-use">카드/패널 표면 (배경보다 밝게 떠보임)</span></div></div>
+      <div class="swatch-card"><div class="swatch-fill" style="background:#F1F4F3"></div><div class="swatch-meta"><span class="swatch-name">Surface 2</span><span class="swatch-var">--surface-2</span><span class="swatch-hex">#F1F4F3</span><span class="swatch-use">칩/뱃지 보조 배경</span></div></div>
+      <div class="swatch-card"><div class="swatch-fill" style="background:#00B8D9"></div><div class="swatch-meta"><span class="swatch-name">Sage/Cyan</span><span class="swatch-var">--sage</span><span class="swatch-hex">#00B8D9</span><span class="swatch-use">예약번호 텍스트, 구간B 시작색과 공유</span></div></div>
+    </div>
+
+    <table class="dark-map">
+      <thead><tr><th>토큰</th><th>라이트</th><th>다크</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">--bg</td><td class="mono"><span class="dot" style="background:#FFFCF7;border:1px solid #ccc"></span>#FFFCF7</td><td class="mono"><span class="dot" style="background:#0B1B1D"></span>#0B1B1D</td></tr>
+        <tr><td class="mono">--surface</td><td class="mono"><span class="dot" style="background:#FFFFFF;border:1px solid #ccc"></span>#FFFFFF</td><td class="mono"><span class="dot" style="background:#122A2C"></span>#122A2C</td></tr>
+        <tr><td class="mono">--pine</td><td class="mono"><span class="dot" style="background:#FF6B00"></span>#FF6B00</td><td class="mono"><span class="dot" style="background:#FF7A2E"></span>#FF7A2E</td></tr>
+        <tr><td class="mono">--pine-strong</td><td class="mono"><span class="dot" style="background:#006D77"></span>#006D77</td><td class="mono"><span class="dot" style="background:#37D6C4"></span>#37D6C4</td></tr>
+        <tr><td class="mono">--amber</td><td class="mono"><span class="dot" style="background:#FFB703"></span>#FFB703</td><td class="mono"><span class="dot" style="background:#FFC94D"></span>#FFC94D</td></tr>
+        <tr><td class="mono">--sage / --seg-b</td><td class="mono"><span class="dot" style="background:#00B8D9"></span>#00B8D9</td><td class="mono"><span class="dot" style="background:#33C8E8"></span>#33C8E8</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">02</span><span class="sec-title">타이포그래피</span></div>
+    <p class="sec-note font-stack-row">Display/Body: <b>Apple SD Gothic Neo, Malgun Gothic, Pretendard, system-ui</b> · Mono(날짜/예약번호): <b>JetBrains Mono, SF Mono, Consolas</b></p>
+    <div>
+      <div class="type-row"><span class="type-tag">H1 · 800</span><span class="t-h1">그라디언트 커버 카드</span></div>
+      <div class="type-row"><span class="type-tag">Title · 800 · 1.0–1.15rem</span><span class="t-title">제주시 · 오션뷰 펜션</span></div>
+      <div class="type-row"><span class="type-tag">Body · 700 · .8rem</span><span class="t-body">제주시티호텔</span></div>
+      <div class="type-row"><span class="type-tag">Meta · 400 · .72rem</span><span class="t-meta">제주시 노형동 123-4</span></div>
+      <div class="type-row"><span class="type-tag">Micro/Chip · 700 · .64rem</span><span class="t-micro">1,000원 / 30분</span></div>
+      <div class="type-row"><span class="type-tag">Mono · 700 · .7rem</span><span class="t-mono">08.03 – 08.04 · RES-88213</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">03</span><span class="sec-title">모서리 · 그림자</span></div>
+    <div class="scale-row">
+      <div class="scale-item"><div class="radius-box" style="border-radius:26px"></div><span class="scale-label">--radius-lg<br>26px · 폰 프레임</span></div>
+      <div class="scale-item"><div class="radius-box" style="border-radius:22px"></div><span class="scale-label">--radius-md<br>22px · 카드</span></div>
+      <div class="scale-item"><div class="radius-box" style="border-radius:10px"></div><span class="scale-label">--radius-sm<br>10px · 칩/노트</span></div>
+      <div class="scale-item"><div class="shadow-box"></div><span class="scale-label">--shadow<br>카드 부양 그림자</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">04</span><span class="sec-title">컴포넌트</span></div>
+    <div class="comp-grid">
+
+      <div class="comp-card">
+        <span class="comp-label">구간 커버 카드 (시그니처 컴포넌트)</span>
+        <div class="mini-segment" style="--seg:#00B8D9;--seg2:#006D77">
+          <div class="mini-cover">
+            <div class="mini-top"><span class="mini-date">08.03</span><span class="mini-nights">2박</span></div>
+            <div class="mini-city">서귀포시 성산읍</div>
+            <svg class="ic ghost"><use href="#ic-bed"></use></svg>
+          </div>
+          <div class="mini-panel">
+            <span class="mini-chev"><svg class="ic"><use href="#ic-chev"></use></svg></span>
+            <div class="mini-stay"><svg class="ic"><use href="#ic-bed"></use></svg>오션뷰 펜션</div>
+            <div class="mini-park"><svg class="ic"><use href="#ic-car"></use></svg>펜션 앞마당 무료, 만차 시 공영주차장</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="comp-card">
+        <span class="comp-label">타임라인 (시각 없이 순서만)</span>
+        <div class="comp-frame">
+          <div class="seq-row" style="--seg:#00B8D9">
+            <div class="seq-col"><span class="seq-dot"></span><span class="seq-line"></span></div>
+            <div class="seq-card"><div class="seq-place">성산일출봉 관람</div></div>
+          </div>
+          <div class="seq-row">
+            <div class="seq-col"><span class="seq-dot" style="background:var(--amber)"></span><span class="seq-line"></span></div>
+            <div class="seq-card parking"><div class="seq-place">주차 · 공영주차장</div><span class="seq-chip">1,000원/30분</span></div>
+          </div>
+          <div class="seq-row" style="--seg:#00B8D9">
+            <div class="seq-col"><span class="seq-dot"></span></div>
+            <div class="seq-card"><div class="seq-place">점심 · 해녀식당</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="comp-card">
+        <span class="comp-label">히어로 배너 + 플로팅 토글</span>
+        <div class="mini-hero">
+          <div class="tn">제주도 가족여행</div>
+          <div class="tr">2026.08.02 – 08.04</div>
+          <div class="mini-toggle"><span class="on">전체 여정</span><span>오늘</span></div>
+        </div>
+      </div>
+
+      <div class="comp-card">
+        <span class="comp-label">하단 내비게이션</span>
+        <div class="mini-nav">
+          <span class="item"><svg class="ic"><use href="#ic-list"></use></svg>여행목록</span>
+          <span class="item on"><svg class="ic"><use href="#ic-cal"></use></svg>전체일정</span>
+          <span class="item"><svg class="ic"><use href="#ic-check"></use></svg>체크리스트</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">05</span><span class="sec-title">디자인 규칙</span></div>
+    <div class="rule-list">
+      <div class="rule"><span class="n">01</span><div><b>주차는 항상 골드.</b><span class="d">구간 색이 무엇이든 주차 카드/점/텍스트는 <code>--amber</code>/<code>--pine-strong</code> 고정. "이건 주차"라는 신호가 절대 흔들리지 않아야 함.</span></div></div>
+      <div class="rule"><span class="n">02</span><div><b>메인 화면 = 전체 여정 개요.</b><span class="d">하루 타임라인이 아니라 숙소가 바뀌는 구간 단위로 먼저 보여준다. 일자별 화면은 보조("오늘" 토글).</span></div></div>
+      <div class="rule"><span class="n">03</span><div><b>시계 시각(HH:MM) 표시 금지.</b><span class="d">모든 세부 일정은 타임라인 점 + 카드 순서로만 순서를 표현한다.</span></div></div>
+      <div class="rule"><span class="n">04</span><div><b>구간 색은 그라디언트 2색 세트.</b><span class="d">구간 A/B/C(오렌지, 시안, 틸)를 순환 사용. 커버·날짜배지·아이콘·타임라인 점이 모두 같은 구간 색을 따라간다.</span></div></div>
+      <div class="rule"><span class="n">05</span><div><b>배경은 순백 금지, 표면만 순백.</b><span class="d"><code>--bg</code>는 옅은 웜톤, <code>--surface</code>(카드)만 <code>#FFFFFF</code>로 흰 면적이 과해 보이지 않게 한다.</span></div></div>
+      <div class="rule"><span class="n">06</span><div><b>커버형 카드가 시그니처.</b><span class="d">사진 대신 그라디언트+고스트 아이콘 커버 위에 흰 정보 패널이 겹쳐 뜨는 구조를 모든 리스트형 카드의 기본으로 삼는다.</span></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">06</span><span class="sec-title">화면 현황</span></div>
+    <div class="status-grid">
+      <div class="status-card"><span class="name">여행 목록</span><span class="status-pill wip">구조만 확정 (와이어프레임)</span></div>
+      <div class="status-card"><span class="name">전체 여정 개요 (메인)</span><span class="status-pill done">비주얼 확정</span></div>
+      <div class="status-card"><span class="name">오늘 일정</span><span class="status-pill wip">구조만 확정 (와이어프레임)</span></div>
+      <div class="status-card"><span class="name">준비물 체크리스트</span><span class="status-pill wip">구조만 확정 (와이어프레임)</span></div>
+    </div>
+  </section>
+
+</main>
