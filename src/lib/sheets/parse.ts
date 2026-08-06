@@ -17,7 +17,9 @@ export function parseSegments(rows: string[][]): Segment[] {
       segmentId: r[0],
       tripId: r[1] ?? "",
       place: r[2] ?? "",
-      order: Number(r[3] ?? 0),
+      // `|| 0` (not `?? 0`) so a non-numeric cell degrades to 0 instead of NaN,
+      // which would break sorting and the segment color lookup.
+      order: Number(r[3]) || 0,
       startDate: r[4] ?? "",
       endDate: r[5] ?? "",
     }));
@@ -39,7 +41,7 @@ export function parseItineraryItems(rows: string[][]): ItineraryItem[] {
       memo: r[5] ?? "",
       reservationNumber: r[6] ?? "",
       category: r[7] ?? "",
-      order: Number(r[8] ?? 0),
+      order: Number(r[8]) || 0,
     }));
 }
 
