@@ -25,6 +25,29 @@ function useGoogleScriptReady(): boolean {
 const EVER_SIGNED_IN_KEY = "travel-app:ever-signed-in";
 
 /**
+ * This flag guards `AppShell`'s top-level gate, so a throw here (private
+ * browsing, disabled storage, a sandboxed iframe) must not take down the
+ * whole app via the root ErrorBoundary — degrade to "never signed in" and
+ * "couldn't remember" instead, same as offlineCache.ts does for itinerary data.
+ */
+function readEverSignedIn(): boolean {
+  try {
+    return localStorage.getItem(EVER_SIGNED_IN_KEY) === "true";
+  } catch (err) {
+    console.error("Failed to read ever-signed-in flag:", err);
+    return false;
+  }
+}
+
+function writeEverSignedIn(): void {
+  try {
+    localStorage.setItem(EVER_SIGNED_IN_KEY, "true");
+  } catch (err) {
+    console.error("Failed to persist ever-signed-in flag:", err);
+  }
+}
+
+/**
  * Owns the single `useGoogleAuth` call for the whole app. Every screen reads the
  * same token through `useAuth()`; calling `useGoogleAuth` per screen would give
  * each screen its own isolated (and permanently signed-out) token state.
@@ -32,13 +55,11 @@ const EVER_SIGNED_IN_KEY = "travel-app:ever-signed-in";
 export function GoogleAuthProvider({ clientId, children }: { clientId: string; children: ReactNode }) {
   const { signIn, getValidToken, isSignedIn, error } = useGoogleAuth(clientId);
   const isGoogleReady = useGoogleScriptReady();
-  const [hasEverSignedIn, setHasEverSignedIn] = useState<boolean>(
-    () => localStorage.getItem(EVER_SIGNED_IN_KEY) === "true"
-  );
+  const [hasEverSignedIn, setHasEverSignedIn] = useState<boolean>(readEverSignedIn);
 
   useEffect(() => {
     if (isSignedIn && !hasEverSignedIn) {
-      localStorage.setItem(EVER_SIGNED_IN_KEY, "true");
+      writeEverSignedIn();
       setHasEverSignedIn(true);
     }
   }, [isSignedIn, hasEverSignedIn]);
