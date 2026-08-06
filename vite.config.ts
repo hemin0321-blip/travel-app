@@ -9,6 +9,13 @@ export default defineConfig({
       registerType: "autoUpdate",
       workbox: {
         globPatterns: ["**/*.{js,css,html,svg,png,ico}"],
+        // Without these, a new deploy's service worker installs but waits for
+        // every open tab of the OLD version to fully close before it takes
+        // over — a plain reload (or even closing just this tab) keeps serving
+        // the previous build. skipWaiting + clientsClaim make a new deploy
+        // take effect on the very next reload instead.
+        skipWaiting: true,
+        clientsClaim: true,
       },
       manifest: {
         name: "여행 앱",

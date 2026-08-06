@@ -13,6 +13,7 @@ type ScreenError = "auth" | "fetch";
 export function TripListScreen() {
   const { getValidToken, signIn } = useAuth();
   const [trips, setTrips] = useState<Trip[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<ScreenError | null>(null);
 
   useEffect(() => {
@@ -29,6 +30,7 @@ export function TripListScreen() {
       .then((rows) => {
         if (cancelled) return;
         setTrips(parseTrips(rows));
+        setLoaded(true);
       })
       .catch((err) => {
         if (cancelled) return;
@@ -52,6 +54,9 @@ export function TripListScreen() {
       )}
       {error === "fetch" && <ErrorBanner message="여행 목록을 불러오지 못했어요" />}
       <Link to="/trips/new" className="add-entity-link">+ 여행 추가</Link>
+      {loaded && trips.length === 0 && !error && (
+        <p className="trip-list__empty">아직 등록된 여행이 없어요. 위에서 첫 여행을 추가해보세요!</p>
+      )}
       {trips.map((trip) => (
         <Link key={trip.tripId} to={`/trips/${trip.tripId}`} className="trip-list__item">
           <span>{trip.name}</span>

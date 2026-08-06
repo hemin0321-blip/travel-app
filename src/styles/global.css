@@ -159,6 +159,12 @@ button:disabled { cursor: not-allowed; }
   text-decoration: none;
   color: var(--ink);
 }
+.trip-list__empty {
+  text-align: center;
+  color: var(--ink-muted);
+  font-size: 0.8rem;
+  padding: 32px 16px;
+}
 
 .timeline { list-style: none; padding: 0; margin: 0; }
 .timeline-item { display: flex; gap: 12px; padding: 8px 0; border-left: 2px solid var(--line); margin-left: 6px; }
