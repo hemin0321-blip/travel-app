@@ -9,28 +9,77 @@ import { ErrorBanner } from "../components/ErrorBanner";
 
 type ScreenError = "auth" | "fetch" | "save";
 
+function ChecklistRow({
+  item,
+  online,
+  onToggle,
+  onDelete,
+}: {
+  item: ChecklistItem;
+  online: boolean;
+  onToggle: (checkId: string, done: boolean) => void;
+  onDelete: (checkId: string) => void;
+}) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  return (
+    <div className={`checklist-list__item${item.done ? " checklist-list__item--done" : ""}`}>
+      <label className="checklist-list__label">
+        <input
+          type="checkbox"
+          checked={item.done}
+          disabled={!online}
+          onChange={(e) => onToggle(item.checkId, e.target.checked)}
+        />
+        <span className="checklist-list__text">{item.label}</span>
+      </label>
+      <div className="checklist-list__menu">
+        <button
+          type="button"
+          className="checklist-list__menu-trigger"
+          disabled={!online}
+          onClick={() => setMenuOpen((open) => !open)}
+          aria-label="더보기"
+        >
+          ⋯
+        </button>
+        {menuOpen && (
+          <button
+            type="button"
+            className="checklist-list__delete"
+            onClick={() => {
+              setMenuOpen(false);
+              onDelete(item.checkId);
+            }}
+          >
+            삭제
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function ChecklistList({
   items,
   online,
   onToggle,
+  onDelete,
 }: {
   items: ChecklistItem[];
   online: boolean;
   onToggle: (checkId: string, done: boolean) => void;
+  onDelete: (checkId: string) => void;
 }) {
+  // Stable sort: not-done items keep their order, done items sink below them
+  // (MS To Do style) without shuffling within either group.
+  const sorted = [...items].sort((a, b) => Number(a.done) - Number(b.done));
+
   return (
     <div className="checklist-list">
       {!online && <p className="offline-banner">오프라인입니다 · 체크 변경은 온라인에서</p>}
-      {items.map((item) => (
-        <label key={item.checkId} className="checklist-list__item">
-          <input
-            type="checkbox"
-            checked={item.done}
-            disabled={!online}
-            onChange={(e) => onToggle(item.checkId, e.target.checked)}
-          />
-          {item.label}
-        </label>
+      {sorted.map((item) => (
+        <ChecklistRow key={item.checkId} item={item} online={online} onToggle={onToggle} onDelete={onDelete} />
       ))}
     </div>
   );
@@ -94,6 +143,29 @@ export function ChecklistScreen() {
     }
   }
 
+  async function handleDelete(checkId: string) {
+    const token = getValidToken();
+    if (!token) {
+      setError("auth");
+      return;
+    }
+    const previous = items;
+    setItems(items.filter((i) => i.checkId !== checkId));
+    try {
+      const client = new SheetsClient(import.meta.env.VITE_SHEET_ID, () => token);
+      const rowNumber = await client.findRowNumberById("체크리스트", checkId);
+      // Blanking the row (rather than a true row deletion) is enough: parseChecklistItems
+      // already filters out rows with no id, so a blanked row just disappears next fetch.
+      if (rowNumber) {
+        await client.updateRow("체크리스트", rowNumber, ["", "", "", ""]);
+      }
+    } catch (err) {
+      console.error("Failed to delete checklist item:", err);
+      setItems(previous);
+      setError("save");
+    }
+  }
+
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     const label = newLabel.trim();
@@ -143,7 +215,7 @@ export function ChecklistScreen() {
           +
         </button>
       </form>
-      <ChecklistList items={items} online={online} onToggle={handleToggle} />
+      <ChecklistList items={items} online={online} onToggle={handleToggle} onDelete={handleDelete} />
     </div>
   );
 }
