@@ -1,7 +1,12 @@
-import { NavLink, useParams } from "react-router-dom";
+import { NavLink, useMatch } from "react-router-dom";
 
 export function BottomNav() {
-  const { tripId } = useParams<{ tripId?: string }>();
+  // BottomNav is rendered by the top-level layout route, so useParams() would
+  // always be empty here. useMatch matches the current URL directly, which works
+  // from any render context.
+  const matchedTripId = useMatch("/trips/:tripId/*")?.params.tripId;
+  // "/trips/new" is the trip creation form, not a trip id.
+  const tripId = matchedTripId && matchedTripId !== "new" ? matchedTripId : undefined;
   const todayHref = tripId ? `/trips/${tripId}/today` : "/";
   const checklistHref = tripId ? `/trips/${tripId}/checklist` : "/";
 
