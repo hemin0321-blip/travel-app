@@ -35,10 +35,12 @@ function installFakeGis() {
 describe("GoogleAuthProvider", () => {
   beforeEach(() => {
     installFakeGis();
+    localStorage.clear();
   });
 
   afterEach(() => {
     delete window.google;
+    localStorage.clear();
   });
 
   it("shares one token with every consumer across the tree", () => {
@@ -109,5 +111,42 @@ describe("GoogleAuthProvider", () => {
 
   it("throws when useAuth is used outside the provider", () => {
     expect(() => render(<TokenProbe name="orphan" />)).toThrow(/GoogleAuthProvider/);
+  });
+
+  it("remembers a past sign-in across a full remount (e.g. a page reload)", () => {
+    function EverSignedInProbe() {
+      const { hasEverSignedIn } = useAuth();
+      return <span data-testid="ever-signed-in">{String(hasEverSignedIn)}</span>;
+    }
+
+    const { unmount } = render(
+      <MemoryRouter>
+        <GoogleAuthProvider clientId="test-client-id">
+          <SignInButton />
+          <EverSignedInProbe />
+        </GoogleAuthProvider>
+      </MemoryRouter>
+    );
+
+    // Never signed in yet on this device: false.
+    expect(screen.getByTestId("ever-signed-in")).toHaveTextContent("false");
+    fireEvent.click(screen.getByText("구글 로그인"));
+    expect(screen.getByTestId("ever-signed-in")).toHaveTextContent("true");
+
+    // A full page reload remounts the whole React tree, so the in-memory
+    // token is gone — but hasEverSignedIn must survive via localStorage,
+    // otherwise the app-level gate would wrongly show the full-screen
+    // sign-in prompt again (blocking the offline cache) every time a token
+    // expires or the page reloads offline.
+    unmount();
+    render(
+      <MemoryRouter>
+        <GoogleAuthProvider clientId="test-client-id">
+          <EverSignedInProbe />
+        </GoogleAuthProvider>
+      </MemoryRouter>
+    );
+
+    expect(screen.getByTestId("ever-signed-in")).toHaveTextContent("true");
   });
 });

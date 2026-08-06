@@ -5,9 +5,12 @@ import { GoogleAuthProvider } from "./auth/GoogleAuthProvider";
 import { useAuth } from "./auth/GoogleAuthContext";
 
 /**
- * App-level signed-out gate. It runs for every route, so reloading directly on a
- * deep route (e.g. /trips/abc123/today) offers a way back in instead of showing
- * an empty screen.
+ * First-run sign-in gate. Only shown before this device has ever completed a
+ * sign-in. Once signed in at least once, we never block the whole app behind
+ * this again — a later missing/expired token (offline, or the hourly token
+ * expiring) is handled per-screen instead, so the offline itinerary cache and
+ * an in-progress form stay visible instead of vanishing behind a login screen
+ * the user may not even be able to submit (e.g. while offline).
  */
 function SignInGate() {
   const { signIn, isGoogleReady, error } = useAuth();
@@ -22,9 +25,9 @@ function SignInGate() {
 }
 
 function AppShell() {
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, hasEverSignedIn } = useAuth();
 
-  if (!isSignedIn) return <SignInGate />;
+  if (!isSignedIn && !hasEverSignedIn) return <SignInGate />;
 
   return (
     <div className="app-shell">

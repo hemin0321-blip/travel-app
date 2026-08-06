@@ -22,6 +22,8 @@ function useGoogleScriptReady(): boolean {
   return ready;
 }
 
+const EVER_SIGNED_IN_KEY = "travel-app:ever-signed-in";
+
 /**
  * Owns the single `useGoogleAuth` call for the whole app. Every screen reads the
  * same token through `useAuth()`; calling `useGoogleAuth` per screen would give
@@ -30,10 +32,20 @@ function useGoogleScriptReady(): boolean {
 export function GoogleAuthProvider({ clientId, children }: { clientId: string; children: ReactNode }) {
   const { signIn, getValidToken, isSignedIn, error } = useGoogleAuth(clientId);
   const isGoogleReady = useGoogleScriptReady();
+  const [hasEverSignedIn, setHasEverSignedIn] = useState<boolean>(
+    () => localStorage.getItem(EVER_SIGNED_IN_KEY) === "true"
+  );
+
+  useEffect(() => {
+    if (isSignedIn && !hasEverSignedIn) {
+      localStorage.setItem(EVER_SIGNED_IN_KEY, "true");
+      setHasEverSignedIn(true);
+    }
+  }, [isSignedIn, hasEverSignedIn]);
 
   const value = useMemo(
-    () => ({ signIn, getValidToken, isSignedIn, error, isGoogleReady }),
-    [signIn, getValidToken, isSignedIn, error, isGoogleReady]
+    () => ({ signIn, getValidToken, isSignedIn, error, isGoogleReady, hasEverSignedIn }),
+    [signIn, getValidToken, isSignedIn, error, isGoogleReady, hasEverSignedIn]
   );
 
   return <GoogleAuthContext.Provider value={value}>{children}</GoogleAuthContext.Provider>;
