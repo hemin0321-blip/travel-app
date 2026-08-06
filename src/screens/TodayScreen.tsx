@@ -4,17 +4,21 @@ import { SheetsClient } from "../lib/sheets/client";
 import { parseSegments, parseItineraryItems } from "../lib/sheets/parse";
 import { findCurrentSegment } from "../lib/tripStatus";
 import type { ItineraryItem, Segment } from "../types/trip";
-import { useGoogleAuth } from "../hooks/useGoogleAuth";
+import { useAuth } from "../auth/GoogleAuthContext";
 import { useOnlineStatus } from "../hooks/useOnlineStatus";
 import { loadItineraryCache, saveItineraryCache } from "../lib/offlineCache";
 import { Timeline } from "../components/Timeline";
+import { ErrorBanner } from "../components/ErrorBanner";
+
+type ScreenError = "auth" | "fetch";
 
 export function TodayScreen() {
   const { tripId } = useParams<{ tripId: string }>();
-  const { getValidToken } = useGoogleAuth(import.meta.env.VITE_GOOGLE_CLIENT_ID);
+  const { getValidToken, signIn } = useAuth();
   const online = useOnlineStatus();
   const [segments, setSegments] = useState<Segment[]>([]);
   const [items, setItems] = useState<ItineraryItem[]>([]);
+  const [error, setError] = useState<ScreenError | null>(null);
 
   useEffect(() => {
     if (!tripId) return;
@@ -25,25 +29,36 @@ export function TodayScreen() {
         setSegments(cached.segments);
         setItems(cached.items);
       }
+      setError(online && !token ? "auth" : null);
       return;
     }
     let cancelled = false;
+    setError(null);
     const client = new SheetsClient(import.meta.env.VITE_SHEET_ID, () => token);
     Promise.all([client.getValues("구간"), client.getValues("일정")])
       .then(([segRows, itemRows]) => {
         if (cancelled) return;
-        const allSegments = parseSegments(segRows).filter((s) => s.tripId === tripId);
-        const allItems = parseItineraryItems(itemRows);
-        setSegments(allSegments);
-        setItems(allItems);
-        saveItineraryCache(tripId, allSegments, allItems);
+        // Same shape as TripOverviewScreen writes: this trip's segments sorted by
+        // order, and only the items belonging to those segments — otherwise each
+        // trip's cache would hold the whole sheet's items.
+        const tripSegments = parseSegments(segRows)
+          .filter((s) => s.tripId === tripId)
+          .sort((a, b) => a.order - b.order);
+        const segmentIds = new Set(tripSegments.map((s) => s.segmentId));
+        const tripItems = parseItineraryItems(itemRows).filter((i) => segmentIds.has(i.segmentId));
+        setSegments(tripSegments);
+        setItems(tripItems);
+        saveItineraryCache(tripId, tripSegments, tripItems);
       })
-      .catch(() => {
+      .catch((err) => {
         if (cancelled) return;
+        console.error("Failed to fetch itinerary:", err);
         const cached = loadItineraryCache(tripId);
         if (cached) {
           setSegments(cached.segments);
           setItems(cached.items);
+        } else {
+          setError("fetch");
         }
       });
     return () => {
@@ -57,6 +72,14 @@ export function TodayScreen() {
   return (
     <div className="today-screen">
       {!online && <p className="offline-banner">오프라인입니다 · 마지막으로 불러온 일정을 보여줍니다</p>}
+      {error === "auth" && (
+        <ErrorBanner
+          message="로그인이 만료됐어요, 다시 로그인 해주세요"
+          actionLabel="다시 로그인"
+          onAction={signIn}
+        />
+      )}
+      {error === "fetch" && <ErrorBanner message="일정을 불러오지 못했어요" />}
       {current ? <Timeline items={todaysItems} /> : <p>오늘에 해당하는 구간이 없습니다.</p>}
     </div>
   );

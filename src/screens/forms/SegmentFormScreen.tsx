@@ -2,30 +2,38 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { SheetsClient } from "../../lib/sheets/client";
 import { segmentToRow } from "../../lib/sheets/parse";
-import { useGoogleAuth } from "../../hooks/useGoogleAuth";
+import { useAuth } from "../../auth/GoogleAuthContext";
+import { ErrorBanner } from "../../components/ErrorBanner";
 
 export function SegmentFormScreen() {
   const { tripId } = useParams<{ tripId: string }>();
   const navigate = useNavigate();
-  const { getValidToken } = useGoogleAuth(import.meta.env.VITE_GOOGLE_CLIENT_ID);
+  const { getValidToken, signIn } = useAuth();
   const [place, setPlace] = useState("");
   const [order, setOrder] = useState(1);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<"auth" | "save" | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const token = getValidToken();
-    if (!token || !tripId) return;
+    if (!token) {
+      setError("auth");
+      return;
+    }
+    if (!tripId) return;
     try {
       setSaving(true);
+      setError(null);
       const segmentId = crypto.randomUUID();
       const client = new SheetsClient(import.meta.env.VITE_SHEET_ID, () => token);
       await client.appendRow("구간", segmentToRow({ segmentId, tripId, place, order, startDate, endDate }));
       navigate(`/trips/${tripId}`);
     } catch (err) {
-      console.error(err);
+      console.error("Failed to save segment:", err);
+      setError("save");
     } finally {
       setSaving(false);
     }
@@ -33,6 +41,10 @@ export function SegmentFormScreen() {
 
   return (
     <form className="entity-form" onSubmit={handleSubmit}>
+      {error === "auth" && (
+        <ErrorBanner message="로그인이 만료됐어요, 다시 로그인 해주세요" actionLabel="다시 로그인" onAction={signIn} />
+      )}
+      {error === "save" && <ErrorBanner message="저장하지 못했어요, 다시 시도해주세요" />}
       <label>
         도시/숙소명
         <input value={place} onChange={(e) => setPlace(e.target.value)} required />

@@ -2,14 +2,15 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { SheetsClient } from "../../lib/sheets/client";
 import { itineraryItemToRow } from "../../lib/sheets/parse";
-import { useGoogleAuth } from "../../hooks/useGoogleAuth";
+import { useAuth } from "../../auth/GoogleAuthContext";
+import { ErrorBanner } from "../../components/ErrorBanner";
 
 const CATEGORIES = ["숙소", "식당", "관광", "주차", "이동", "기타"];
 
 export function ItineraryItemFormScreen() {
   const { segmentId } = useParams<{ segmentId: string }>();
   const navigate = useNavigate();
-  const { getValidToken } = useGoogleAuth(import.meta.env.VITE_GOOGLE_CLIENT_ID);
+  const { getValidToken, signIn } = useAuth();
   const [placeName, setPlaceName] = useState("");
   const [address, setAddress] = useState("");
   const [transport, setTransport] = useState("");
@@ -18,13 +19,19 @@ export function ItineraryItemFormScreen() {
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [order, setOrder] = useState(1);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<"auth" | "save" | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const token = getValidToken();
-    if (!token || !segmentId) return;
+    if (!token) {
+      setError("auth");
+      return;
+    }
+    if (!segmentId) return;
     try {
       setSaving(true);
+      setError(null);
       const itemId = crypto.randomUUID();
       const client = new SheetsClient(import.meta.env.VITE_SHEET_ID, () => token);
       await client.appendRow(
@@ -33,7 +40,8 @@ export function ItineraryItemFormScreen() {
       );
       navigate(-1);
     } catch (err) {
-      console.error(err);
+      console.error("Failed to save itinerary item:", err);
+      setError("save");
     } finally {
       setSaving(false);
     }
@@ -41,6 +49,10 @@ export function ItineraryItemFormScreen() {
 
   return (
     <form className="entity-form" onSubmit={handleSubmit}>
+      {error === "auth" && (
+        <ErrorBanner message="로그인이 만료됐어요, 다시 로그인 해주세요" actionLabel="다시 로그인" onAction={signIn} />
+      )}
+      {error === "save" && <ErrorBanner message="저장하지 못했어요, 다시 시도해주세요" />}
       <label>
         장소명
         <input value={placeName} onChange={(e) => setPlaceName(e.target.value)} required />
