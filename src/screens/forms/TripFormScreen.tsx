@@ -48,11 +48,23 @@ export function TripFormScreen() {
       </label>
       <label>
         시작일
-        <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
+        <input
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          onClick={(e) => e.currentTarget.showPicker?.()}
+          required
+        />
       </label>
       <label>
         종료일
-        <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required />
+        <input
+          type="date"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          onClick={(e) => e.currentTarget.showPicker?.()}
+          required
+        />
       </label>
       <button type="submit" disabled={saving}>{saving ? "저장 중..." : "저장"}</button>
     </form>
