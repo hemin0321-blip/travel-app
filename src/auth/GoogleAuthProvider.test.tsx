@@ -14,23 +14,15 @@ function SignInButton() {
   return <button onClick={signIn}>구글 로그인</button>;
 }
 
-function installFakeGis(options: { silentSucceeds?: boolean } = {}) {
-  const silentSucceeds = options.silentSucceeds ?? true;
+function installFakeGis() {
   let capturedCallback: ((resp: { access_token: string; expires_in: number }) => void) | null = null;
-  let capturedErrorCallback: ((err: { type?: string }) => void) | null = null;
   window.google = {
     accounts: {
       oauth2: {
         initTokenClient: (config) => {
           capturedCallback = config.callback;
-          capturedErrorCallback = config.error_callback ?? null;
           return {
-            requestAccessToken: (overrideConfig) => {
-              const isSilent = overrideConfig?.prompt === "";
-              if (isSilent && !silentSucceeds) {
-                capturedErrorCallback?.({ type: "no_active_session" });
-                return;
-              }
+            requestAccessToken: () => {
               capturedCallback?.({ access_token: "token-abc", expires_in: 3600 });
             },
           };
@@ -44,11 +36,13 @@ describe("GoogleAuthProvider", () => {
   beforeEach(() => {
     installFakeGis();
     localStorage.clear();
+    sessionStorage.clear();
   });
 
   afterEach(() => {
     delete window.google;
     localStorage.clear();
+    sessionStorage.clear();
   });
 
   it("shares one token with every consumer across the tree", () => {
@@ -158,7 +152,7 @@ describe("GoogleAuthProvider", () => {
     expect(screen.getByTestId("ever-signed-in")).toHaveTextContent("true");
   });
 
-  it("silently re-acquires a token after a remount, with no click, when the browser session is still active", () => {
+  it("keeps a still-valid token across a remount (e.g. a page reload), without a click", () => {
     function SignedInProbe() {
       const { isSignedIn } = useAuth();
       return <span data-testid="signed-in">{String(isSignedIn)}</span>;
@@ -174,8 +168,10 @@ describe("GoogleAuthProvider", () => {
     fireEvent.click(screen.getByText("구글 로그인"));
     unmount();
 
-    // Simulates a page reload: the in-memory token is gone, but the browser
-    // still has an active Google session, so GIS can reissue one silently.
+    // A reload remounts the whole tree and wipes in-memory state, but the
+    // token (not just the "ever signed in" flag) should survive via
+    // sessionStorage since it's still within its own lifetime — no popup
+    // needed just because the page reloaded.
     render(
       <MemoryRouter>
         <GoogleAuthProvider clientId="test-client-id">
@@ -187,35 +183,25 @@ describe("GoogleAuthProvider", () => {
     expect(screen.getByTestId("signed-in")).toHaveTextContent("true");
   });
 
-  it("does not surface a visible error when a silent reauth attempt fails", () => {
-    installFakeGis({ silentSucceeds: false });
+  it("treats an actually-expired persisted token as signed-out", () => {
+    sessionStorage.setItem(
+      "travel-app:token",
+      JSON.stringify({ accessToken: "stale-token", expiresAtMs: Date.now() - 1000 })
+    );
 
-    function AuthProbe() {
-      const { isSignedIn, error } = useAuth();
-      return <span data-testid="auth-probe">{`${String(isSignedIn)}:${error ?? "none"}`}</span>;
+    function SignedInProbe() {
+      const { isSignedIn } = useAuth();
+      return <span data-testid="signed-in">{String(isSignedIn)}</span>;
     }
 
-    const { unmount } = render(
-      <MemoryRouter>
-        <GoogleAuthProvider clientId="test-client-id">
-          <SignInButton />
-        </GoogleAuthProvider>
-      </MemoryRouter>
-    );
-    fireEvent.click(screen.getByText("구글 로그인"));
-    unmount();
-
-    // The browser's Google session lapsed too (e.g. the user signed out of
-    // Google entirely) — the silent attempt fails, but that should look like
-    // an ordinary signed-out state, not an alarming error banner.
     render(
       <MemoryRouter>
         <GoogleAuthProvider clientId="test-client-id">
-          <AuthProbe />
+          <SignedInProbe />
         </GoogleAuthProvider>
       </MemoryRouter>
     );
 
-    expect(screen.getByTestId("auth-probe")).toHaveTextContent("false:none");
+    expect(screen.getByTestId("signed-in")).toHaveTextContent("false");
   });
 });
