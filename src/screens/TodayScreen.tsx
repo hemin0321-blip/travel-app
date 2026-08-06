@@ -7,8 +7,10 @@ import type { ItineraryItem, Segment } from "../types/trip";
 import { useAuth } from "../auth/GoogleAuthContext";
 import { useOnlineStatus } from "../hooks/useOnlineStatus";
 import { loadItineraryCache, saveItineraryCache } from "../lib/offlineCache";
+import { setCurrentTripId } from "../lib/currentTrip";
 import { Timeline } from "../components/Timeline";
 import { ErrorBanner } from "../components/ErrorBanner";
+import { TripHeader } from "../components/TripHeader";
 
 type ScreenError = "auth" | "fetch";
 
@@ -19,6 +21,10 @@ export function TodayScreen() {
   const [segments, setSegments] = useState<Segment[]>([]);
   const [items, setItems] = useState<ItineraryItem[]>([]);
   const [error, setError] = useState<ScreenError | null>(null);
+
+  useEffect(() => {
+    if (tripId) setCurrentTripId(tripId);
+  }, [tripId]);
 
   useEffect(() => {
     if (!tripId) return;
@@ -71,6 +77,7 @@ export function TodayScreen() {
 
   return (
     <div className="today-screen">
+      <TripHeader tripId={tripId} />
       {!online && <p className="offline-banner">오프라인입니다 · 마지막으로 불러온 일정을 보여줍니다</p>}
       {error === "auth" && (
         <ErrorBanner

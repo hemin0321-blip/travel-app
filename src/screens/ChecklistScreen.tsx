@@ -5,7 +5,9 @@ import { parseChecklistItems, checklistItemToRow } from "../lib/sheets/parse";
 import type { ChecklistItem } from "../types/trip";
 import { useAuth } from "../auth/GoogleAuthContext";
 import { useOnlineStatus } from "../hooks/useOnlineStatus";
+import { setCurrentTripId } from "../lib/currentTrip";
 import { ErrorBanner } from "../components/ErrorBanner";
+import { TripHeader } from "../components/TripHeader";
 
 type ScreenError = "auth" | "fetch" | "save";
 
@@ -93,6 +95,10 @@ export function ChecklistScreen() {
   const [newLabel, setNewLabel] = useState("");
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState<ScreenError | null>(null);
+
+  useEffect(() => {
+    if (tripId) setCurrentTripId(tripId);
+  }, [tripId]);
 
   useEffect(() => {
     if (!tripId || !online) return;
@@ -195,6 +201,7 @@ export function ChecklistScreen() {
 
   return (
     <div className="checklist-screen">
+      <TripHeader tripId={tripId} />
       {error === "auth" && (
         <ErrorBanner
           message="로그인이 만료됐어요, 다시 로그인 해주세요"

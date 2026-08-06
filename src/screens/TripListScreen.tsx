@@ -8,6 +8,7 @@ import { useAuth } from "../auth/GoogleAuthContext";
 import { StatusBadge } from "../components/StatusBadge";
 import { ErrorBanner } from "../components/ErrorBanner";
 import { hardReset } from "../lib/hardReset";
+import { setCurrentTripId } from "../lib/currentTrip";
 
 type ScreenError = "auth" | "fetch" | "save";
 
@@ -121,7 +122,12 @@ export function TripListScreen() {
         <p className="trip-list__empty">아직 등록된 여행이 없어요. 위에서 첫 여행을 추가해보세요!</p>
       )}
       {trips.map((trip) => (
-        <Link key={trip.tripId} to={`/trips/${trip.tripId}`} className="trip-list__item">
+        <Link
+          key={trip.tripId}
+          to={`/trips/${trip.tripId}`}
+          className="trip-list__item"
+          onClick={() => setCurrentTripId(trip.tripId)}
+        >
           <span>{trip.name}</span>
           <StatusBadge status={computeTripStatus(trip, today)} />
         </Link>

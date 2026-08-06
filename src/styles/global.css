@@ -274,15 +274,20 @@ button:disabled { cursor: not-allowed; }
   font-weight: 700;
 }
 
-.add-entity-link {
-  display: block;
-  text-align: center;
-  background: var(--pine);
-  color: var(--surface);
-  border-radius: var(--radius-sm);
-  padding: 12px;
-  margin-bottom: 16px;
-  font-size: 0.8rem;
+.trip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--line);
+}
+.trip-header__name { font-weight: 800; font-size: 1rem; overflow-wrap: anywhere; }
+.trip-header__switch {
+  flex-shrink: 0;
+  color: var(--pine-strong);
+  font-size: 0.72rem;
   font-weight: 700;
   text-decoration: none;
 }
