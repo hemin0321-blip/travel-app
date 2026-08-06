@@ -7,6 +7,7 @@ import type { Trip } from "../types/trip";
 import { useAuth } from "../auth/GoogleAuthContext";
 import { StatusBadge } from "../components/StatusBadge";
 import { ErrorBanner } from "../components/ErrorBanner";
+import { hardReset } from "../lib/hardReset";
 
 type ScreenError = "auth" | "fetch";
 
@@ -63,6 +64,9 @@ export function TripListScreen() {
           <StatusBadge status={computeTripStatus(trip, today)} />
         </Link>
       ))}
+      <button type="button" className="hard-reset-link" onClick={() => void hardReset()}>
+        화면이 이상하거나 오래된 것 같으면 여기를 눌러 새로고침
+      </button>
     </div>
   );
 }
