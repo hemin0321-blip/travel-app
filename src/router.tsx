@@ -4,6 +4,7 @@ import { TripListScreen } from "./screens/TripListScreen";
 import { TripOverviewScreen } from "./screens/TripOverviewScreen";
 import { TodayScreen } from "./screens/TodayScreen";
 import { ChecklistScreen } from "./screens/ChecklistScreen";
+import { SegmentDetailScreen } from "./screens/SegmentDetailScreen";
 import { ItineraryItemFormScreen } from "./screens/forms/ItineraryItemFormScreen";
 import { getCurrentTripId } from "./lib/currentTrip";
 
@@ -28,6 +29,7 @@ export const router = createBrowserRouter([
       { path: "trips/:tripId", element: <TripOverviewScreen /> },
       { path: "trips/:tripId/today", element: <TodayScreen /> },
       { path: "trips/:tripId/checklist", element: <ChecklistScreen /> },
+      { path: "trips/:tripId/segments/:segmentId", element: <SegmentDetailScreen /> },
       { path: "segments/:segmentId/items/new", element: <ItineraryItemFormScreen /> },
     ],
   },

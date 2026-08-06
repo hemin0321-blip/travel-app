@@ -155,7 +155,7 @@ export function TripOverviewScreen() {
         <SegmentCoverCard
           key={segment.segmentId}
           segment={segment}
-          onExpand={() => navigate(`/segments/${segment.segmentId}/items/new`)}
+          onExpand={() => navigate(`/trips/${tripId}/segments/${segment.segmentId}`)}
         />
       ))}
     </div>
