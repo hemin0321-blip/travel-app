@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { SheetsClient } from "../lib/sheets/client";
 import { parseChecklistItems, checklistItemToRow } from "../lib/sheets/parse";
 import type { ChecklistItem } from "../types/trip";
@@ -41,6 +41,8 @@ export function ChecklistScreen() {
   const { getValidToken, signIn } = useAuth();
   const online = useOnlineStatus();
   const [items, setItems] = useState<ChecklistItem[]>([]);
+  const [newLabel, setNewLabel] = useState("");
+  const [adding, setAdding] = useState(false);
   const [error, setError] = useState<ScreenError | null>(null);
 
   useEffect(() => {
@@ -92,6 +94,33 @@ export function ChecklistScreen() {
     }
   }
 
+  async function handleAdd(e: React.FormEvent) {
+    e.preventDefault();
+    const label = newLabel.trim();
+    if (!label || !tripId) return;
+    const token = getValidToken();
+    if (!token) {
+      setError("auth");
+      return;
+    }
+    setAdding(true);
+    try {
+      const checkId = crypto.randomUUID();
+      const item: ChecklistItem = { checkId, tripId, label, done: false };
+      const client = new SheetsClient(import.meta.env.VITE_SHEET_ID, () => token);
+      await client.appendRow("체크리스트", checklistItemToRow(item));
+      // Same-input-stays-focused pattern (MS To Do style): add to the list and
+      // clear the field so the next item can be typed immediately, no navigation.
+      setItems((prev) => [...prev, item]);
+      setNewLabel("");
+    } catch (err) {
+      console.error("Failed to add checklist item:", err);
+      setError("save");
+    } finally {
+      setAdding(false);
+    }
+  }
+
   return (
     <div className="checklist-screen">
       {error === "auth" && (
@@ -103,7 +132,17 @@ export function ChecklistScreen() {
       )}
       {error === "fetch" && <ErrorBanner message="준비물을 불러오지 못했어요" />}
       {error === "save" && <ErrorBanner message="저장하지 못했어요, 다시 시도해주세요" />}
-      <Link to={`/trips/${tripId}/checklist/new`} className="add-entity-link">+ 항목 추가</Link>
+      <form className="checklist-add" onSubmit={handleAdd}>
+        <input
+          value={newLabel}
+          onChange={(e) => setNewLabel(e.target.value)}
+          placeholder="준비물 추가"
+          disabled={!online || adding}
+        />
+        <button type="submit" disabled={!online || adding || !newLabel.trim()} aria-label="추가">
+          +
+        </button>
+      </form>
       <ChecklistList items={items} online={online} onToggle={handleToggle} />
     </div>
   );

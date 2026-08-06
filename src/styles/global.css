@@ -209,6 +209,20 @@ button:disabled { cursor: not-allowed; }
   text-decoration: none;
 }
 
+.checklist-add { display: flex; gap: 8px; margin-bottom: 16px; }
+.checklist-add input { flex: 1; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink); }
+.checklist-add button {
+  width: 40px;
+  flex-shrink: 0;
+  background: var(--pine);
+  color: var(--surface);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.checklist-add button:disabled { background: var(--surface-2); color: var(--ink-muted); }
+
 .entity-form { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
 .entity-form label { display: flex; flex-direction: column; gap: 4px; font-size: 0.8rem; color: var(--ink); }
 .entity-form input { padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink); }
