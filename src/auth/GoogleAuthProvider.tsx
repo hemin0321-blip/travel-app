@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useGoogleAuth } from "../hooks/useGoogleAuth";
 import { GoogleAuthContext } from "./GoogleAuthContext";
@@ -53,9 +53,13 @@ function writeEverSignedIn(): void {
  * each screen its own isolated (and permanently signed-out) token state.
  */
 export function GoogleAuthProvider({ clientId, children }: { clientId: string; children: ReactNode }) {
-  const { signIn, getValidToken, isSignedIn, error } = useGoogleAuth(clientId);
+  const { signIn, trySilentSignIn, getValidToken, isSignedIn, error } = useGoogleAuth(clientId);
   const isGoogleReady = useGoogleScriptReady();
   const [hasEverSignedIn, setHasEverSignedIn] = useState<boolean>(readEverSignedIn);
+  // Guards against retrying on every render — reset once a token is live, so
+  // the next time it lapses (a real expiry, not just this effect re-running)
+  // gets exactly one more silent attempt.
+  const attemptedSilentRef = useRef(false);
 
   useEffect(() => {
     if (isSignedIn && !hasEverSignedIn) {
@@ -63,6 +67,19 @@ export function GoogleAuthProvider({ clientId, children }: { clientId: string; c
       setHasEverSignedIn(true);
     }
   }, [isSignedIn, hasEverSignedIn]);
+
+  // A returning user (page reload, reopened tab, fresh PWA launch) has no
+  // token in memory yet — GIS never persists it. Try to reacquire one
+  // silently before falling back to the manual "다시 로그인" button.
+  useEffect(() => {
+    if (isSignedIn) {
+      attemptedSilentRef.current = false;
+      return;
+    }
+    if (!isGoogleReady || !hasEverSignedIn || attemptedSilentRef.current) return;
+    attemptedSilentRef.current = true;
+    trySilentSignIn();
+  }, [isSignedIn, isGoogleReady, hasEverSignedIn, trySilentSignIn]);
 
   const value = useMemo(
     () => ({ signIn, getValidToken, isSignedIn, error, isGoogleReady, hasEverSignedIn }),

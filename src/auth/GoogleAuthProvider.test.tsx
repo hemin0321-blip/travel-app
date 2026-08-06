@@ -14,15 +14,23 @@ function SignInButton() {
   return <button onClick={signIn}>구글 로그인</button>;
 }
 
-function installFakeGis() {
+function installFakeGis(options: { silentSucceeds?: boolean } = {}) {
+  const silentSucceeds = options.silentSucceeds ?? true;
   let capturedCallback: ((resp: { access_token: string; expires_in: number }) => void) | null = null;
+  let capturedErrorCallback: ((err: { type?: string }) => void) | null = null;
   window.google = {
     accounts: {
       oauth2: {
         initTokenClient: (config) => {
           capturedCallback = config.callback;
+          capturedErrorCallback = config.error_callback ?? null;
           return {
-            requestAccessToken: () => {
+            requestAccessToken: (overrideConfig) => {
+              const isSilent = overrideConfig?.prompt === "";
+              if (isSilent && !silentSucceeds) {
+                capturedErrorCallback?.({ type: "no_active_session" });
+                return;
+              }
               capturedCallback?.({ access_token: "token-abc", expires_in: 3600 });
             },
           };
@@ -148,5 +156,66 @@ describe("GoogleAuthProvider", () => {
     );
 
     expect(screen.getByTestId("ever-signed-in")).toHaveTextContent("true");
+  });
+
+  it("silently re-acquires a token after a remount, with no click, when the browser session is still active", () => {
+    function SignedInProbe() {
+      const { isSignedIn } = useAuth();
+      return <span data-testid="signed-in">{String(isSignedIn)}</span>;
+    }
+
+    const { unmount } = render(
+      <MemoryRouter>
+        <GoogleAuthProvider clientId="test-client-id">
+          <SignInButton />
+        </GoogleAuthProvider>
+      </MemoryRouter>
+    );
+    fireEvent.click(screen.getByText("구글 로그인"));
+    unmount();
+
+    // Simulates a page reload: the in-memory token is gone, but the browser
+    // still has an active Google session, so GIS can reissue one silently.
+    render(
+      <MemoryRouter>
+        <GoogleAuthProvider clientId="test-client-id">
+          <SignedInProbe />
+        </GoogleAuthProvider>
+      </MemoryRouter>
+    );
+
+    expect(screen.getByTestId("signed-in")).toHaveTextContent("true");
+  });
+
+  it("does not surface a visible error when a silent reauth attempt fails", () => {
+    installFakeGis({ silentSucceeds: false });
+
+    function AuthProbe() {
+      const { isSignedIn, error } = useAuth();
+      return <span data-testid="auth-probe">{`${String(isSignedIn)}:${error ?? "none"}`}</span>;
+    }
+
+    const { unmount } = render(
+      <MemoryRouter>
+        <GoogleAuthProvider clientId="test-client-id">
+          <SignInButton />
+        </GoogleAuthProvider>
+      </MemoryRouter>
+    );
+    fireEvent.click(screen.getByText("구글 로그인"));
+    unmount();
+
+    // The browser's Google session lapsed too (e.g. the user signed out of
+    // Google entirely) — the silent attempt fails, but that should look like
+    // an ordinary signed-out state, not an alarming error banner.
+    render(
+      <MemoryRouter>
+        <GoogleAuthProvider clientId="test-client-id">
+          <AuthProbe />
+        </GoogleAuthProvider>
+      </MemoryRouter>
+    );
+
+    expect(screen.getByTestId("auth-probe")).toHaveTextContent("false:none");
   });
 });

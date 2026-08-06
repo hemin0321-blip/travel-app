@@ -16,7 +16,7 @@ declare global {
             scope: string;
             callback: (resp: { access_token: string; expires_in: number }) => void;
             error_callback?: (err: { type?: string; message?: string }) => void;
-          }) => { requestAccessToken: () => void };
+          }) => { requestAccessToken: (overrideConfig?: { prompt?: string }) => void };
         };
       };
     };
@@ -29,7 +29,14 @@ const SIGN_IN_ERROR = "로그인에 실패했어요, 다시 시도해주세요";
 export function useGoogleAuth(clientId: string) {
   const [token, setToken] = useState<TokenState>({ accessToken: null, expiresAtMs: null });
   const [error, setError] = useState<string | null>(null);
-  const tokenClientRef = useRef<{ requestAccessToken: () => void } | null>(null);
+  const tokenClientRef = useRef<{ requestAccessToken: (overrideConfig?: { prompt?: string }) => void } | null>(
+    null
+  );
+  // A silent (no-popup) reauth attempt that fails just means the browser has
+  // no active Google session — that's a normal, expected outcome, not an
+  // error worth interrupting the user with. Only surface error_callback as a
+  // visible message for interactive attempts.
+  const isSilentAttemptRef = useRef(false);
 
   const ensureTokenClient = useCallback(() => {
     if (!tokenClientRef.current && window.google) {
@@ -37,13 +44,16 @@ export function useGoogleAuth(clientId: string) {
         client_id: clientId,
         scope: SCOPE,
         callback: (resp) => {
+          isSilentAttemptRef.current = false;
           setError(null);
           setToken({ accessToken: resp.access_token, expiresAtMs: Date.now() + resp.expires_in * 1000 });
         },
         // Fires when Google rejects the request — popup closed, or the account
         // is not on the OAuth consent screen's test-user allowlist.
         error_callback: () => {
-          setError(SIGN_IN_ERROR);
+          const wasSilent = isSilentAttemptRef.current;
+          isSilentAttemptRef.current = false;
+          if (!wasSilent) setError(SIGN_IN_ERROR);
         },
       });
     }
@@ -57,8 +67,19 @@ export function useGoogleAuth(clientId: string) {
       setError(SIGN_IN_ERROR);
       return;
     }
+    isSilentAttemptRef.current = false;
     setError(null);
     client.requestAccessToken();
+  }, [ensureTokenClient]);
+
+  // Tries to reacquire a token without a popup, using the browser's existing
+  // Google session — lets a returning user skip the manual "다시 로그인"
+  // click after a reload, closer to how M365 apps stay signed in silently.
+  const trySilentSignIn = useCallback(() => {
+    const client = ensureTokenClient();
+    if (!client) return;
+    isSilentAttemptRef.current = true;
+    client.requestAccessToken({ prompt: "" });
   }, [ensureTokenClient]);
 
   const getValidToken = useCallback((): string | null => {
@@ -67,5 +88,5 @@ export function useGoogleAuth(clientId: string) {
     return token.accessToken;
   }, [token]);
 
-  return { signIn, getValidToken, isSignedIn: getValidToken() !== null, error };
+  return { signIn, trySilentSignIn, getValidToken, isSignedIn: getValidToken() !== null, error };
 }
