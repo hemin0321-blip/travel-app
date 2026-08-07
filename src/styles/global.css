@@ -50,6 +50,8 @@ button:disabled { cursor: not-allowed; }
   padding: 24px;
   background: var(--bg);
 }
+.signin-gate__title { margin: 0; font-size: 1.3rem; font-weight: 800; }
+.signin-gate__subtitle { margin: 0 0 8px; color: var(--ink-muted); font-size: 0.8rem; text-align: center; }
 .signin-gate button {
   background: var(--pine);
   color: var(--surface);

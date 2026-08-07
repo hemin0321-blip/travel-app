@@ -16,6 +16,8 @@ function SignInGate() {
   const { signIn, isGoogleReady, error } = useAuth();
   return (
     <div className="signin-gate">
+      <h1 className="signin-gate__title">여행 앱</h1>
+      <p className="signin-gate__subtitle">구글 계정으로 로그인하면 일정을 볼 수 있어요</p>
       {error && <ErrorBanner message={error} />}
       <button type="button" onClick={signIn} disabled={!isGoogleReady}>
         {isGoogleReady ? "구글 로그인" : "로딩 중..."}
