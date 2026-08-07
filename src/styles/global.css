@@ -240,6 +240,19 @@ button:disabled { cursor: not-allowed; }
   font-size: 0.8rem;
 }
 .rental-car button:disabled { background: var(--surface-2); color: var(--ink-muted); }
+.rental-car__summary { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.rental-car__summary-line { margin: 2px 0 0; font-size: 0.8rem; color: var(--ink); }
+.rental-car__edit-toggle {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--pine-strong);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.rental-car__actions { display: flex; gap: 8px; }
+.rental-car__actions button { flex: 1; align-self: stretch; }
+button.rental-car__cancel { background: var(--surface-2); color: var(--ink-muted); }
 
 .hard-reset-link {
   display: block;
@@ -261,6 +274,8 @@ button:disabled { cursor: not-allowed; }
 .timeline-item--parking .timeline-item__card { background: var(--amber-soft); }
 .timeline-item__card { background: var(--surface); border-radius: var(--radius-sm); padding: 10px 14px; flex: 1; }
 .timeline-item__place { margin: 0; font-weight: 700; }
+.timeline-item__time { color: var(--pine-strong); font-weight: 800; margin-right: 6px; }
+.timeline-item__detail { margin: 4px 0 0; font-size: 0.72rem; color: var(--ink-muted); overflow-wrap: anywhere; }
 .timeline-item__memo { margin: 4px 0 0; font-size: 0.72rem; color: var(--ink-muted); }
 .timeline-item__menu { position: relative; flex-shrink: 0; }
 .timeline-item__menu-trigger { background: none; border: none; color: var(--ink-muted); font-size: 1rem; line-height: 1; padding: 4px 8px; }
@@ -357,29 +372,25 @@ button:disabled { cursor: not-allowed; }
   text-decoration: none;
 }
 
-.segment-detail__header { margin-bottom: 16px; }
-.segment-detail__back {
-  display: inline-block;
-  margin-bottom: 10px;
-  color: var(--pine-strong);
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-decoration: none;
+.segment-panel {
+  margin: -20px 0 20px;
+  padding: 16px 12px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
 }
-.segment-detail__place { font-weight: 800; font-size: 1.05rem; }
-.segment-detail__dates { color: var(--ink-muted); font-size: 0.8rem; margin-top: 2px; }
-.segment-detail__summary { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-.segment-detail__edit-toggle {
-  flex-shrink: 0;
+.segment-panel__edit-toggle {
+  display: block;
+  margin-bottom: 12px;
   background: none;
   border: none;
   color: var(--pine-strong);
   font-size: 0.72rem;
   font-weight: 700;
 }
-.segment-detail__edit-toggle:disabled { color: var(--ink-muted); }
-.segment-detail__actions { display: flex; gap: 8px; }
-.segment-detail__actions button {
+.segment-panel__edit-toggle:disabled { color: var(--ink-muted); }
+.segment-panel__actions { display: flex; gap: 8px; }
+.segment-panel__actions button {
   flex: 1;
   padding: 10px;
   border: none;
@@ -389,8 +400,8 @@ button:disabled { cursor: not-allowed; }
   background: var(--pine);
   color: var(--surface);
 }
-.segment-detail__actions button:disabled { background: var(--surface-2); color: var(--ink-muted); }
-button.segment-detail__cancel { background: var(--surface-2); color: var(--ink-muted); }
+.segment-panel__actions button:disabled { background: var(--surface-2); color: var(--ink-muted); }
+button.segment-panel__cancel { background: var(--surface-2); color: var(--ink-muted); }
 .segment-detail__add {
   margin-top: 16px;
   padding: 12px;

@@ -7,7 +7,15 @@ const GRADIENTS: Record<string, string> = {
   c: "linear-gradient(135deg, var(--seg-c), var(--seg-c2))",
 };
 
-export function SegmentCoverCard({ segment, onExpand }: { segment: Segment; onExpand: () => void }) {
+export function SegmentCoverCard({
+  segment,
+  expanded = false,
+  onExpand,
+}: {
+  segment: Segment;
+  expanded?: boolean;
+  onExpand: () => void;
+}) {
   const key = segmentColorKey(segment.order);
   return (
     <div className="segment-cover" style={{ background: GRADIENTS[key] }}>
@@ -17,7 +25,7 @@ export function SegmentCoverCard({ segment, onExpand }: { segment: Segment; onEx
           {segment.startDate} ~ {segment.endDate}
         </p>
         <button className="segment-cover__expand" onClick={onExpand} aria-label="펼치기">
-          ➔
+          {expanded ? "▼" : "➔"}
         </button>
       </div>
     </div>

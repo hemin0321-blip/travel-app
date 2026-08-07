@@ -50,7 +50,7 @@ describe("segmentToRow", () => {
 
 describe("parseItineraryItems", () => {
   it("converts sheet rows into ItineraryItem objects", () => {
-    const rows = [["i1", "s1", "숙소 A", "제주시 어딘가", "렌터카", "체크인 3시", "R123", "숙소", "1"]];
+    const rows = [["i1", "s1", "숙소 A", "제주시 어딘가", "렌터카", "체크인 3시", "R123", "숙소", "1", "15:00"]];
     expect(parseItineraryItems(rows)).toEqual([
       {
         itemId: "i1",
@@ -62,8 +62,14 @@ describe("parseItineraryItems", () => {
         reservationNumber: "R123",
         category: "숙소",
         order: 1,
+        time: "15:00",
       },
     ]);
+  });
+
+  it("defaults time to an empty string for rows saved before the time column existed", () => {
+    const rows = [["i1", "s1", "숙소 A", "", "", "", "", "숙소", "1"]];
+    expect(parseItineraryItems(rows)[0].time).toBe("");
   });
 });
 
@@ -79,8 +85,20 @@ describe("itineraryItemToRow", () => {
       reservationNumber: "R123",
       category: "숙소",
       order: 1,
+      time: "15:00",
     };
-    expect(itineraryItemToRow(item)).toEqual(["i1", "s1", "숙소 A", "제주시 어딘가", "렌터카", "체크인 3시", "R123", "숙소", "1"]);
+    expect(itineraryItemToRow(item)).toEqual([
+      "i1",
+      "s1",
+      "숙소 A",
+      "제주시 어딘가",
+      "렌터카",
+      "체크인 3시",
+      "R123",
+      "숙소",
+      "1",
+      "15:00",
+    ]);
   });
 });
 
@@ -106,9 +124,17 @@ describe("checklistItemToRow", () => {
 
 describe("parseRentalCars", () => {
   it("converts sheet rows into RentalCar objects", () => {
-    const rows = [["t1", "2026-09-01", "2026-09-04", "제주공항", "롯데렌터카"]];
+    const rows = [["t1", "2026-09-01", "2026-09-04", "제주공항", "롯데렌터카", "10:00", "18:00"]];
     expect(parseRentalCars(rows)).toEqual([
-      { tripId: "t1", pickupDate: "2026-09-01", returnDate: "2026-09-04", location: "제주공항", company: "롯데렌터카" },
+      {
+        tripId: "t1",
+        pickupDate: "2026-09-01",
+        returnDate: "2026-09-04",
+        location: "제주공항",
+        company: "롯데렌터카",
+        pickupTime: "10:00",
+        returnTime: "18:00",
+      },
     ]);
   });
 
@@ -119,7 +145,23 @@ describe("parseRentalCars", () => {
 
 describe("rentalCarToRow", () => {
   it("converts a RentalCar back into a row", () => {
-    const car = { tripId: "t1", pickupDate: "2026-09-01", returnDate: "2026-09-04", location: "제주공항", company: "롯데렌터카" };
-    expect(rentalCarToRow(car)).toEqual(["t1", "2026-09-01", "2026-09-04", "제주공항", "롯데렌터카"]);
+    const car = {
+      tripId: "t1",
+      pickupDate: "2026-09-01",
+      returnDate: "2026-09-04",
+      location: "제주공항",
+      company: "롯데렌터카",
+      pickupTime: "10:00",
+      returnTime: "18:00",
+    };
+    expect(rentalCarToRow(car)).toEqual([
+      "t1",
+      "2026-09-01",
+      "2026-09-04",
+      "제주공항",
+      "롯데렌터카",
+      "10:00",
+      "18:00",
+    ]);
   });
 });

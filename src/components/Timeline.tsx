@@ -75,8 +75,16 @@ export function Timeline({
           >
             <span className="timeline-item__dot" />
             <div className="timeline-item__card">
-              <p className="timeline-item__place">{item.placeName}</p>
+              <p className="timeline-item__place">
+                {item.time && <span className="timeline-item__time">{item.time}</span>}
+                {item.placeName}
+              </p>
+              {item.address && <p className="timeline-item__detail">{item.address}</p>}
+              {item.transport && <p className="timeline-item__detail">이동수단: {item.transport}</p>}
               {item.memo && <p className="timeline-item__memo">{item.memo}</p>}
+              {item.reservationNumber && (
+                <p className="timeline-item__detail">예약번호: {item.reservationNumber}</p>
+              )}
             </div>
             {(onEdit || onDelete) && (
               <TimelineItemMenu itemId={item.itemId} onEdit={onEdit} onDelete={onDelete} />

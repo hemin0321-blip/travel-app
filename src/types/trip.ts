@@ -24,6 +24,7 @@ export interface ItineraryItem {
   reservationNumber: string;
   category: string; // "주차" 이면 항상 골드 강조
   order: number;
+  time: string; // HH:MM, optional
 }
 
 export interface ChecklistItem {
@@ -41,4 +42,6 @@ export interface RentalCar {
   returnDate: string;
   location: string;
   company: string;
+  pickupTime: string; // HH:MM
+  returnTime: string; // HH:MM
 }

@@ -42,6 +42,9 @@ export function parseItineraryItems(rows: string[][]): ItineraryItem[] {
       reservationNumber: r[6] ?? "",
       category: r[7] ?? "",
       order: Number(r[8]) || 0,
+      // Appended after the original 9 columns, so existing rows (saved before
+      // time existed) just read back as "" instead of shifting every column.
+      time: r[9] ?? "",
     }));
 }
 
@@ -56,6 +59,7 @@ export function itineraryItemToRow(item: ItineraryItem): string[] {
     item.reservationNumber,
     item.category,
     String(item.order),
+    item.time,
   ];
 }
 
@@ -78,9 +82,11 @@ export function parseRentalCars(rows: string[][]): RentalCar[] {
       returnDate: r[2] ?? "",
       location: r[3] ?? "",
       company: r[4] ?? "",
+      pickupTime: r[5] ?? "",
+      returnTime: r[6] ?? "",
     }));
 }
 
 export function rentalCarToRow(car: RentalCar): string[] {
-  return [car.tripId, car.pickupDate, car.returnDate, car.location, car.company];
+  return [car.tripId, car.pickupDate, car.returnDate, car.location, car.company, car.pickupTime, car.returnTime];
 }

@@ -16,6 +16,7 @@ export function ItineraryItemFormScreen() {
   const { getValidToken, signIn } = useAuth();
   const online = useOnlineStatus();
   const [placeName, setPlaceName] = useState("");
+  const [time, setTime] = useState("");
   const [address, setAddress] = useState("");
   const [transport, setTransport] = useState("");
   const [memo, setMemo] = useState("");
@@ -45,6 +46,7 @@ export function ItineraryItemFormScreen() {
           return;
         }
         setPlaceName(item.placeName);
+        setTime(item.time);
         setAddress(item.address);
         setTransport(item.transport);
         setMemo(item.memo);
@@ -85,6 +87,7 @@ export function ItineraryItemFormScreen() {
               itemId,
               segmentId,
               placeName,
+              time,
               address,
               transport,
               memo,
@@ -106,6 +109,7 @@ export function ItineraryItemFormScreen() {
             itemId: crypto.randomUUID(),
             segmentId,
             placeName,
+            time,
             address,
             transport,
             memo,
@@ -139,6 +143,15 @@ export function ItineraryItemFormScreen() {
       <label>
         장소명
         <input value={placeName} onChange={(e) => setPlaceName(e.target.value)} required />
+      </label>
+      <label>
+        시간
+        <input
+          type="time"
+          value={time}
+          onChange={(e) => setTime(e.target.value)}
+          onClick={(e) => e.currentTarget.showPicker?.()}
+        />
       </label>
       <label>
         주소

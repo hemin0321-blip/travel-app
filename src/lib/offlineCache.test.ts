@@ -12,7 +12,7 @@ describe("offlineCache", () => {
 
   it("saves and reloads segments and items for a trip", () => {
     const segments = [{ segmentId: "s1", tripId: "t1", place: "제주시", order: 1, startDate: "2026-09-01", endDate: "2026-09-02" }];
-    const items = [{ itemId: "i1", segmentId: "s1", placeName: "숙소 A", address: "", transport: "", memo: "", reservationNumber: "", category: "숙소", order: 1 }];
+    const items = [{ itemId: "i1", segmentId: "s1", placeName: "숙소 A", address: "", transport: "", memo: "", reservationNumber: "", category: "숙소", order: 1, time: "" }];
 
     saveItineraryCache("t1", segments, items);
     const cached = loadItineraryCache("t1");

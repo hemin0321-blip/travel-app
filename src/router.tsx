@@ -1,10 +1,9 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter, Navigate, useParams } from "react-router-dom";
 import App from "./App";
 import { TripListScreen } from "./screens/TripListScreen";
 import { TripOverviewScreen } from "./screens/TripOverviewScreen";
 import { TodayScreen } from "./screens/TodayScreen";
 import { ChecklistScreen } from "./screens/ChecklistScreen";
-import { SegmentDetailScreen } from "./screens/SegmentDetailScreen";
 import { ItineraryItemFormScreen } from "./screens/forms/ItineraryItemFormScreen";
 import { getCurrentTripId } from "./lib/currentTrip";
 
@@ -19,6 +18,15 @@ function RootRedirect() {
   return <Navigate to={tripId ? `/trips/${tripId}` : "/trips"} replace />;
 }
 
+/**
+ * The old per-segment detail screen was replaced by an inline accordion on
+ * the trip overview itself — this just catches any stale links to that URL.
+ */
+function SegmentRedirect() {
+  const { tripId } = useParams<{ tripId: string }>();
+  return <Navigate to={tripId ? `/trips/${tripId}` : "/trips"} replace />;
+}
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -29,7 +37,7 @@ export const router = createBrowserRouter([
       { path: "trips/:tripId", element: <TripOverviewScreen /> },
       { path: "trips/:tripId/today", element: <TodayScreen /> },
       { path: "trips/:tripId/checklist", element: <ChecklistScreen /> },
-      { path: "trips/:tripId/segments/:segmentId", element: <SegmentDetailScreen /> },
+      { path: "trips/:tripId/segments/:segmentId", element: <SegmentRedirect /> },
       { path: "segments/:segmentId/items/new", element: <ItineraryItemFormScreen /> },
       { path: "segments/:segmentId/items/:itemId/edit", element: <ItineraryItemFormScreen /> },
     ],
