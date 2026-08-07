@@ -31,6 +31,7 @@ export const router = createBrowserRouter([
       { path: "trips/:tripId/checklist", element: <ChecklistScreen /> },
       { path: "trips/:tripId/segments/:segmentId", element: <SegmentDetailScreen /> },
       { path: "segments/:segmentId/items/new", element: <ItineraryItemFormScreen /> },
+      { path: "segments/:segmentId/items/:itemId/edit", element: <ItineraryItemFormScreen /> },
     ],
   },
 ]);

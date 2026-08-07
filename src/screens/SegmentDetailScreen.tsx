@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { SheetsClient } from "../lib/sheets/client";
-import { parseSegments, parseItineraryItems } from "../lib/sheets/parse";
+import { parseSegments, parseItineraryItems, segmentToRow } from "../lib/sheets/parse";
 import type { ItineraryItem, Segment } from "../types/trip";
 import { useAuth } from "../auth/GoogleAuthContext";
 import { useOnlineStatus } from "../hooks/useOnlineStatus";
@@ -22,6 +22,11 @@ export function SegmentDetailScreen() {
   const [items, setItems] = useState<ItineraryItem[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<ScreenError | null>(null);
+  const [editingSegment, setEditingSegment] = useState(false);
+  const [editPlace, setEditPlace] = useState("");
+  const [editStart, setEditStart] = useState("");
+  const [editEnd, setEditEnd] = useState("");
+  const [savingSegment, setSavingSegment] = useState(false);
 
   useEffect(() => {
     if (tripId) setCurrentTripId(tripId);
@@ -72,6 +77,45 @@ export function SegmentDetailScreen() {
     };
   }, [tripId, segmentId, online, getValidToken]);
 
+  function handleEditItem(itemId: string) {
+    navigate(`/segments/${segmentId}/items/${itemId}/edit`);
+  }
+
+  function startEditingSegment() {
+    if (!segment) return;
+    setEditPlace(segment.place);
+    setEditStart(segment.startDate);
+    setEditEnd(segment.endDate);
+    setEditingSegment(true);
+  }
+
+  async function handleSaveSegment(e: React.FormEvent) {
+    e.preventDefault();
+    if (!segment || !tripId || !segmentId) return;
+    const token = getValidToken();
+    if (!token) {
+      setError("auth");
+      return;
+    }
+    setSavingSegment(true);
+    setError(null);
+    try {
+      const client = new SheetsClient(import.meta.env.VITE_SHEET_ID, () => token);
+      const rowNumber = await client.findRowNumberById("구간", segmentId);
+      if (rowNumber) {
+        const updated: Segment = { ...segment, place: editPlace, startDate: editStart, endDate: editEnd };
+        await client.updateRow("구간", rowNumber, segmentToRow(updated));
+        setSegment(updated);
+      }
+      setEditingSegment(false);
+    } catch (err) {
+      console.error("Failed to update segment:", err);
+      setError("save");
+    } finally {
+      setSavingSegment(false);
+    }
+  }
+
   async function handleDelete(itemId: string) {
     const token = getValidToken();
     if (!token) {
@@ -102,13 +146,63 @@ export function SegmentDetailScreen() {
         <Link to={`/trips/${tripId}`} className="segment-detail__back">
           ← 전체일정
         </Link>
-        {segment && (
-          <div>
-            <p className="segment-detail__place">{segment.place}</p>
-            <p className="segment-detail__dates">
-              {segment.startDate} ~ {segment.endDate}
-            </p>
+        {segment && !editingSegment && (
+          <div className="segment-detail__summary">
+            <div>
+              <p className="segment-detail__place">{segment.place}</p>
+              <p className="segment-detail__dates">
+                {segment.startDate} ~ {segment.endDate}
+              </p>
+            </div>
+            <button
+              type="button"
+              className="segment-detail__edit-toggle"
+              disabled={!online}
+              onClick={startEditingSegment}
+            >
+              수정
+            </button>
           </div>
+        )}
+        {segment && editingSegment && (
+          <form className="trip-add" onSubmit={handleSaveSegment}>
+            <input
+              value={editPlace}
+              onChange={(e) => setEditPlace(e.target.value)}
+              placeholder="도시/숙소"
+              disabled={savingSegment}
+            />
+            <div className="trip-add__row">
+              <input
+                type="date"
+                value={editStart}
+                onChange={(e) => setEditStart(e.target.value)}
+                onClick={(e) => e.currentTarget.showPicker?.()}
+                disabled={savingSegment}
+              />
+              <span>~</span>
+              <input
+                type="date"
+                value={editEnd}
+                onChange={(e) => setEditEnd(e.target.value)}
+                onClick={(e) => e.currentTarget.showPicker?.()}
+                disabled={savingSegment}
+              />
+            </div>
+            <div className="segment-detail__actions">
+              <button
+                type="button"
+                className="segment-detail__cancel"
+                onClick={() => setEditingSegment(false)}
+                disabled={savingSegment}
+              >
+                취소
+              </button>
+              <button type="submit" disabled={savingSegment || !editPlace.trim() || !editStart || !editEnd}>
+                {savingSegment ? "저장 중..." : "저장"}
+              </button>
+            </div>
+          </form>
         )}
       </div>
       {!online && <p className="offline-banner">오프라인입니다 · 마지막으로 불러온 일정을 보여줍니다</p>}
@@ -120,11 +214,15 @@ export function SegmentDetailScreen() {
         />
       )}
       {error === "fetch" && <ErrorBanner message="일정을 불러오지 못했어요" />}
-      {error === "save" && <ErrorBanner message="삭제하지 못했어요, 다시 시도해주세요" />}
+      {error === "save" && <ErrorBanner message="저장하지 못했어요, 다시 시도해주세요" />}
       {loaded && items.length === 0 && !error && (
         <p className="trip-list__empty">아직 등록된 일정이 없어요. 아래에서 첫 일정을 추가해보세요!</p>
       )}
-      <Timeline items={items} onDelete={online ? handleDelete : undefined} />
+      <Timeline
+        items={items}
+        onEdit={online ? handleEditItem : undefined}
+        onDelete={online ? handleDelete : undefined}
+      />
       <button
         type="button"
         className="segment-detail__add"
