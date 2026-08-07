@@ -11,7 +11,7 @@ import { Timeline } from "../components/Timeline";
 import { ErrorBanner } from "../components/ErrorBanner";
 import { TripHeader } from "../components/TripHeader";
 
-type ScreenError = "auth" | "fetch";
+type ScreenError = "auth" | "fetch" | "save";
 
 export function SegmentDetailScreen() {
   const { tripId, segmentId } = useParams<{ tripId: string; segmentId: string }>();
@@ -72,6 +72,29 @@ export function SegmentDetailScreen() {
     };
   }, [tripId, segmentId, online, getValidToken]);
 
+  async function handleDelete(itemId: string) {
+    const token = getValidToken();
+    if (!token) {
+      setError("auth");
+      return;
+    }
+    const previous = items;
+    setItems(items.filter((i) => i.itemId !== itemId));
+    try {
+      const client = new SheetsClient(import.meta.env.VITE_SHEET_ID, () => token);
+      const rowNumber = await client.findRowNumberById("일정", itemId);
+      // Blanking the row (rather than a true row deletion) is enough: parseItineraryItems
+      // already filters out rows with no id, so a blanked row just disappears next fetch.
+      if (rowNumber) {
+        await client.updateRow("일정", rowNumber, ["", "", "", "", "", "", "", "", ""]);
+      }
+    } catch (err) {
+      console.error("Failed to delete itinerary item:", err);
+      setItems(previous);
+      setError("save");
+    }
+  }
+
   return (
     <div className="segment-detail-screen">
       <TripHeader tripId={tripId} />
@@ -97,10 +120,11 @@ export function SegmentDetailScreen() {
         />
       )}
       {error === "fetch" && <ErrorBanner message="일정을 불러오지 못했어요" />}
+      {error === "save" && <ErrorBanner message="삭제하지 못했어요, 다시 시도해주세요" />}
       {loaded && items.length === 0 && !error && (
         <p className="trip-list__empty">아직 등록된 일정이 없어요. 아래에서 첫 일정을 추가해보세요!</p>
       )}
-      <Timeline items={items} />
+      <Timeline items={items} onDelete={handleDelete} />
       <button
         type="button"
         className="segment-detail__add"
