@@ -62,7 +62,7 @@ export function RentalCarSection({ tripId }: { tripId: string | undefined }) {
     setError(false);
     try {
       const client = new SheetsClient(import.meta.env.VITE_SHEET_ID, () => token);
-      await client.ensureSheetExists("렌터카");
+      await client.ensureSheetExists("렌터카", ["tripId", "pickupDate", "returnDate", "location", "company"]);
       const rowNumber = await client.findRowNumberById("렌터카", tripId);
       const row = rentalCarToRow({ tripId, pickupDate, returnDate, location, company });
       if (rowNumber) {

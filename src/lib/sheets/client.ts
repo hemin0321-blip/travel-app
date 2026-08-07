@@ -56,7 +56,12 @@ export class SheetsClient {
   // this app has no separate "set up your sheet" step — so a screen that
   // introduces a new tab creates it itself the first time it's needed,
   // instead of asking the user to go add it by hand in Google Sheets.
-  async ensureSheetExists(sheetName: string): Promise<void> {
+  //
+  // getValues() always reads from row 2 down (every existing tab has a
+  // human-made header row in row 1), so a freshly created tab needs that
+  // same header row seeded immediately — otherwise the very first append
+  // lands in row 1 and getValues() can never see it again.
+  async ensureSheetExists(sheetName: string, headerRow: string[]): Promise<void> {
     const metaUrl = `${SHEETS_BASE}/${this.spreadsheetId}?fields=sheets.properties.title`;
     const metaRes = await fetch(metaUrl, { headers: { Authorization: `Bearer ${this.getToken()}` } });
     if (!metaRes.ok) throw new Error(`Sheets metadata fetch failed: ${metaRes.status}`);
@@ -76,5 +81,7 @@ export class SheetsClient {
       body: JSON.stringify({ requests: [{ addSheet: { properties: { title: sheetName } } }] }),
     });
     if (!batchRes.ok) throw new Error(`Sheet creation failed: ${batchRes.status}`);
+
+    await this.updateRow(sheetName, 1, headerRow);
   }
 }

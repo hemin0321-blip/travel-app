@@ -70,25 +70,30 @@ describe("SheetsClient", () => {
       json: async () => ({ sheets: [{ properties: { title: "여행" } }, { properties: { title: "렌터카" } }] }),
     });
 
-    await client.ensureSheetExists("렌터카");
+    await client.ensureSheetExists("렌터카", ["tripId"]);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it("ensureSheetExists creates the sheet via batchUpdate when it's missing", async () => {
+  it("ensureSheetExists creates the sheet via batchUpdate and seeds a header row when it's missing", async () => {
     fetchMock
       .mockResolvedValueOnce({ ok: true, json: async () => ({ sheets: [{ properties: { title: "여행" } }] }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) })
       .mockResolvedValueOnce({ ok: true, json: async () => ({}) });
 
-    await client.ensureSheetExists("렌터카");
+    await client.ensureSheetExists("렌터카", ["tripId", "location"]);
 
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    const [url, options] = fetchMock.mock.calls[1];
-    expect(url).toContain(":batchUpdate");
-    expect(options.method).toBe("POST");
-    expect(JSON.parse(options.body)).toEqual({
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    const [batchUrl, batchOptions] = fetchMock.mock.calls[1];
+    expect(batchUrl).toContain(":batchUpdate");
+    expect(batchOptions.method).toBe("POST");
+    expect(JSON.parse(batchOptions.body)).toEqual({
       requests: [{ addSheet: { properties: { title: "렌터카" } } }],
     });
+    const [headerUrl, headerOptions] = fetchMock.mock.calls[2];
+    expect(headerUrl).toContain(encodeURIComponent("렌터카!A1:B1"));
+    expect(headerOptions.method).toBe("PUT");
+    expect(JSON.parse(headerOptions.body)).toEqual({ values: [["tripId", "location"]] });
   });
 
   it("ensureSheetExists throws when sheet creation fails", async () => {
@@ -96,6 +101,6 @@ describe("SheetsClient", () => {
       .mockResolvedValueOnce({ ok: true, json: async () => ({ sheets: [] }) })
       .mockResolvedValueOnce({ ok: false, status: 403 });
 
-    await expect(client.ensureSheetExists("렌터카")).rejects.toThrow("Sheet creation failed: 403");
+    await expect(client.ensureSheetExists("렌터카", ["tripId"])).rejects.toThrow("Sheet creation failed: 403");
   });
 });
