@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { SheetsClient } from "../../lib/sheets/client";
-import { itineraryItemToRow } from "../../lib/sheets/parse";
+import { itineraryItemToRow, parseItineraryItems } from "../../lib/sheets/parse";
 import { useAuth } from "../../auth/GoogleAuthContext";
 import { useOnlineStatus } from "../../hooks/useOnlineStatus";
 import { ErrorBanner } from "../../components/ErrorBanner";
@@ -19,7 +19,6 @@ export function ItineraryItemFormScreen() {
   const [memo, setMemo] = useState("");
   const [reservationNumber, setReservationNumber] = useState("");
   const [category, setCategory] = useState(CATEGORIES[0]);
-  const [order, setOrder] = useState(1);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<"auth" | "save" | null>(null);
 
@@ -36,9 +35,24 @@ export function ItineraryItemFormScreen() {
       setError(null);
       const itemId = crypto.randomUUID();
       const client = new SheetsClient(import.meta.env.VITE_SHEET_ID, () => token);
+      // Order isn't something a user should have to think about — append to
+      // the end of this segment's existing items, same as the trip/segment
+      // add forms already do with their own "order" field.
+      const existingRows = await client.getValues("일정");
+      const existingCount = parseItineraryItems(existingRows).filter((i) => i.segmentId === segmentId).length;
       await client.appendRow(
         "일정",
-        itineraryItemToRow({ itemId, segmentId, placeName, address, transport, memo, reservationNumber, category, order })
+        itineraryItemToRow({
+          itemId,
+          segmentId,
+          placeName,
+          address,
+          transport,
+          memo,
+          reservationNumber,
+          category,
+          order: existingCount + 1,
+        })
       );
       navigate(-1);
     } catch (err) {
@@ -83,10 +97,6 @@ export function ItineraryItemFormScreen() {
             <option key={c} value={c}>{c}</option>
           ))}
         </select>
-      </label>
-      <label>
-        순서
-        <input type="number" min={1} value={order} onChange={(e) => setOrder(Number(e.target.value))} required />
       </label>
       <button type="submit" disabled={saving || !online}>{saving ? "저장 중..." : "저장"}</button>
     </form>
