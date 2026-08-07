@@ -32,3 +32,13 @@ export interface ChecklistItem {
   label: string;
   done: boolean;
 }
+
+// One per trip — keyed by tripId itself rather than a separate id, since a
+// trip only ever has a single rental car record.
+export interface RentalCar {
+  tripId: string;
+  pickupDate: string;
+  returnDate: string;
+  location: string;
+  company: string;
+}

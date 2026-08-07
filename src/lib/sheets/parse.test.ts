@@ -8,6 +8,8 @@ import {
   itineraryItemToRow,
   parseChecklistItems,
   checklistItemToRow,
+  parseRentalCars,
+  rentalCarToRow,
 } from "./parse";
 
 describe("parseTrips", () => {
@@ -99,5 +101,25 @@ describe("checklistItemToRow", () => {
   it("formats done as TRUE/FALSE strings", () => {
     expect(checklistItemToRow({ checkId: "c1", tripId: "t1", label: "여권", done: true })).toEqual(["c1", "t1", "여권", "TRUE"]);
     expect(checklistItemToRow({ checkId: "c2", tripId: "t1", label: "충전기", done: false })).toEqual(["c2", "t1", "충전기", "FALSE"]);
+  });
+});
+
+describe("parseRentalCars", () => {
+  it("converts sheet rows into RentalCar objects", () => {
+    const rows = [["t1", "2026-09-01", "2026-09-04", "제주공항", "롯데렌터카"]];
+    expect(parseRentalCars(rows)).toEqual([
+      { tripId: "t1", pickupDate: "2026-09-01", returnDate: "2026-09-04", location: "제주공항", company: "롯데렌터카" },
+    ]);
+  });
+
+  it("skips rows with no trip ID", () => {
+    expect(parseRentalCars([["", "2026-09-01"]])).toEqual([]);
+  });
+});
+
+describe("rentalCarToRow", () => {
+  it("converts a RentalCar back into a row", () => {
+    const car = { tripId: "t1", pickupDate: "2026-09-01", returnDate: "2026-09-04", location: "제주공항", company: "롯데렌터카" };
+    expect(rentalCarToRow(car)).toEqual(["t1", "2026-09-01", "2026-09-04", "제주공항", "롯데렌터카"]);
   });
 });

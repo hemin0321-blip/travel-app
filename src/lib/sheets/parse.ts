@@ -1,4 +1,4 @@
-import type { Trip, Segment, ItineraryItem, ChecklistItem } from "../../types/trip";
+import type { Trip, Segment, ItineraryItem, ChecklistItem, RentalCar } from "../../types/trip";
 
 export function parseTrips(rows: string[][]): Trip[] {
   return rows
@@ -67,4 +67,20 @@ export function parseChecklistItems(rows: string[][]): ChecklistItem[] {
 
 export function checklistItemToRow(item: ChecklistItem): string[] {
   return [item.checkId, item.tripId, item.label, item.done ? "TRUE" : "FALSE"];
+}
+
+export function parseRentalCars(rows: string[][]): RentalCar[] {
+  return rows
+    .filter((r) => r[0])
+    .map((r) => ({
+      tripId: r[0],
+      pickupDate: r[1] ?? "",
+      returnDate: r[2] ?? "",
+      location: r[3] ?? "",
+      company: r[4] ?? "",
+    }));
+}
+
+export function rentalCarToRow(car: RentalCar): string[] {
+  return [car.tripId, car.pickupDate, car.returnDate, car.location, car.company];
 }

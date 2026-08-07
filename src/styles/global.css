@@ -207,6 +207,40 @@ button:disabled { cursor: not-allowed; }
   font-weight: 700;
 }
 .trip-add__row button:disabled { background: var(--surface-2); color: var(--ink-muted); }
+
+.rental-car {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow);
+  padding: 12px;
+  margin-bottom: 16px;
+}
+.rental-car__title { margin: 0; font-weight: 800; font-size: 0.8rem; color: var(--ink-muted); }
+.rental-car__row { display: flex; align-items: center; gap: 8px; }
+.rental-car input {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--ink);
+}
+.rental-car__row input { flex: 1; min-width: 0; }
+.rental-car__row span { color: var(--ink-muted); font-size: 0.8rem; flex-shrink: 0; }
+.rental-car button {
+  align-self: flex-start;
+  padding: 8px 16px;
+  background: var(--pine);
+  color: var(--surface);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+.rental-car button:disabled { background: var(--surface-2); color: var(--ink-muted); }
+
 .hard-reset-link {
   display: block;
   width: 100%;

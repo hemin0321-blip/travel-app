@@ -51,4 +51,30 @@ export class SheetsClient {
     const idx = rows.findIndex((r) => r[0] === id);
     return idx === -1 ? null : idx + 2;
   }
+
+  // The Sheets values API can't write to a tab that doesn't exist yet, and
+  // this app has no separate "set up your sheet" step — so a screen that
+  // introduces a new tab creates it itself the first time it's needed,
+  // instead of asking the user to go add it by hand in Google Sheets.
+  async ensureSheetExists(sheetName: string): Promise<void> {
+    const metaUrl = `${SHEETS_BASE}/${this.spreadsheetId}?fields=sheets.properties.title`;
+    const metaRes = await fetch(metaUrl, { headers: { Authorization: `Bearer ${this.getToken()}` } });
+    if (!metaRes.ok) throw new Error(`Sheets metadata fetch failed: ${metaRes.status}`);
+    const meta = await metaRes.json();
+    const titles: string[] = (meta.sheets ?? []).map(
+      (s: { properties?: { title?: string } }) => s.properties?.title
+    );
+    if (titles.includes(sheetName)) return;
+
+    const batchUrl = `${SHEETS_BASE}/${this.spreadsheetId}:batchUpdate`;
+    const batchRes = await fetch(batchUrl, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.getToken()}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ requests: [{ addSheet: { properties: { title: sheetName } } }] }),
+    });
+    if (!batchRes.ok) throw new Error(`Sheet creation failed: ${batchRes.status}`);
+  }
 }

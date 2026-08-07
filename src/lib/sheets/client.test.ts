@@ -63,4 +63,39 @@ describe("SheetsClient", () => {
     fetchMock.mockResolvedValue({ ok: true, json: async () => ({ values: [["c1"]] }) });
     expect(await client.findRowNumberById("체크리스트", "missing")).toBeNull();
   });
+
+  it("ensureSheetExists does nothing when the sheet already exists", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({ sheets: [{ properties: { title: "여행" } }, { properties: { title: "렌터카" } }] }),
+    });
+
+    await client.ensureSheetExists("렌터카");
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("ensureSheetExists creates the sheet via batchUpdate when it's missing", async () => {
+    fetchMock
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ sheets: [{ properties: { title: "여행" } }] }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+
+    await client.ensureSheetExists("렌터카");
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const [url, options] = fetchMock.mock.calls[1];
+    expect(url).toContain(":batchUpdate");
+    expect(options.method).toBe("POST");
+    expect(JSON.parse(options.body)).toEqual({
+      requests: [{ addSheet: { properties: { title: "렌터카" } } }],
+    });
+  });
+
+  it("ensureSheetExists throws when sheet creation fails", async () => {
+    fetchMock
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ sheets: [] }) })
+      .mockResolvedValueOnce({ ok: false, status: 403 });
+
+    await expect(client.ensureSheetExists("렌터카")).rejects.toThrow("Sheet creation failed: 403");
+  });
 });

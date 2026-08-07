@@ -10,6 +10,7 @@ import { setCurrentTripId } from "../lib/currentTrip";
 import { SegmentCoverCard } from "../components/SegmentCoverCard";
 import { ErrorBanner } from "../components/ErrorBanner";
 import { TripHeader } from "../components/TripHeader";
+import { RentalCarSection } from "../components/RentalCarSection";
 
 type ScreenError = "auth" | "fetch" | "save";
 
@@ -116,6 +117,7 @@ export function TripOverviewScreen() {
       )}
       {error === "fetch" && <ErrorBanner message="일정을 불러오지 못했어요" />}
       {error === "save" && <ErrorBanner message="저장하지 못했어요, 다시 시도해주세요" />}
+      <RentalCarSection tripId={tripId} />
       <form className="trip-add" onSubmit={handleAdd}>
         <input
           value={newPlace}
