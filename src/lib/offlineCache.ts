@@ -1,6 +1,7 @@
-import type { Segment, ItineraryItem } from "../types/trip";
+import type { Segment, ItineraryItem, Trip } from "../types/trip";
 
 const KEY_PREFIX = "travel-app:itinerary:";
+const TRIPS_KEY = "travel-app:trips";
 
 export interface CachedItinerary {
   tripId: string;
@@ -28,6 +29,25 @@ export function loadItineraryCache(tripId: string): CachedItinerary | null {
     // Corrupted entry: degrade to "no cache" rather than throwing on the
     // offline path, where recovery is hardest.
     console.error("Failed to read itinerary cache:", err);
+    return null;
+  }
+}
+
+export function saveTripsCache(trips: Trip[]): void {
+  try {
+    localStorage.setItem(TRIPS_KEY, JSON.stringify(trips));
+  } catch (err) {
+    console.error("Failed to save trips cache:", err);
+  }
+}
+
+export function loadTripsCache(): Trip[] | null {
+  const raw = localStorage.getItem(TRIPS_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as Trip[];
+  } catch (err) {
+    console.error("Failed to read trips cache:", err);
     return null;
   }
 }

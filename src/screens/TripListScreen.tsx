@@ -5,15 +5,18 @@ import { parseTrips, tripToRow } from "../lib/sheets/parse";
 import { computeTripStatus } from "../lib/tripStatus";
 import type { Trip } from "../types/trip";
 import { useAuth } from "../auth/GoogleAuthContext";
+import { useOnlineStatus } from "../hooks/useOnlineStatus";
 import { StatusBadge } from "../components/StatusBadge";
 import { ErrorBanner } from "../components/ErrorBanner";
 import { hardReset } from "../lib/hardReset";
 import { setCurrentTripId } from "../lib/currentTrip";
+import { loadTripsCache, saveTripsCache } from "../lib/offlineCache";
 
 type ScreenError = "auth" | "fetch" | "save";
 
 export function TripListScreen() {
   const { getValidToken, signIn } = useAuth();
+  const online = useOnlineStatus();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [newName, setNewName] = useState("");
@@ -24,8 +27,13 @@ export function TripListScreen() {
 
   useEffect(() => {
     const token = getValidToken();
-    if (!token) {
-      setError("auth");
+    if (!online || !token) {
+      const cached = loadTripsCache();
+      if (cached) {
+        setTrips(cached);
+        setLoaded(true);
+      }
+      setError(online && !token ? "auth" : null);
       return;
     }
     let cancelled = false;
@@ -35,18 +43,26 @@ export function TripListScreen() {
       .getValues("여행")
       .then((rows) => {
         if (cancelled) return;
-        setTrips(parseTrips(rows));
+        const parsed = parseTrips(rows);
+        setTrips(parsed);
         setLoaded(true);
+        saveTripsCache(parsed);
       })
       .catch((err) => {
         if (cancelled) return;
         console.error("Failed to fetch trips:", err);
-        setError("fetch");
+        const cached = loadTripsCache();
+        if (cached) {
+          setTrips(cached);
+          setLoaded(true);
+        } else {
+          setError("fetch");
+        }
       });
     return () => {
       cancelled = true;
     };
-  }, [getValidToken]);
+  }, [online, getValidToken]);
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -77,6 +93,7 @@ export function TripListScreen() {
   const today = new Date();
   return (
     <div className="trip-list-screen">
+      {!online && <p className="offline-banner">오프라인입니다 · 마지막으로 불러온 목록을 보여줍니다</p>}
       {error === "auth" && (
         <ErrorBanner
           message="로그인이 만료됐어요, 다시 로그인 해주세요"
