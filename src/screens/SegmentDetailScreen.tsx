@@ -124,10 +124,11 @@ export function SegmentDetailScreen() {
       {loaded && items.length === 0 && !error && (
         <p className="trip-list__empty">아직 등록된 일정이 없어요. 아래에서 첫 일정을 추가해보세요!</p>
       )}
-      <Timeline items={items} onDelete={handleDelete} />
+      <Timeline items={items} onDelete={online ? handleDelete : undefined} />
       <button
         type="button"
         className="segment-detail__add"
+        disabled={!online}
         onClick={() => navigate(`/segments/${segmentId}/items/new`)}
       >
         + 일정 추가

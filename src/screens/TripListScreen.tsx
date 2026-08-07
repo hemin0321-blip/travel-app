@@ -108,7 +108,7 @@ export function TripListScreen() {
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
           placeholder="여행 이름 추가"
-          disabled={adding}
+          disabled={adding || !online}
         />
         <div className="trip-add__row">
           <input
@@ -116,7 +116,7 @@ export function TripListScreen() {
             value={newStart}
             onChange={(e) => setNewStart(e.target.value)}
             onClick={(e) => e.currentTarget.showPicker?.()}
-            disabled={adding}
+            disabled={adding || !online}
           />
           <span>~</span>
           <input
@@ -124,11 +124,11 @@ export function TripListScreen() {
             value={newEnd}
             onChange={(e) => setNewEnd(e.target.value)}
             onClick={(e) => e.currentTarget.showPicker?.()}
-            disabled={adding}
+            disabled={adding || !online}
           />
           <button
             type="submit"
-            disabled={adding || !newName.trim() || !newStart || !newEnd}
+            disabled={adding || !online || !newName.trim() || !newStart || !newEnd}
             aria-label="추가"
           >
             +

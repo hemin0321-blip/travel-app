@@ -121,7 +121,7 @@ export function TripOverviewScreen() {
           value={newPlace}
           onChange={(e) => setNewPlace(e.target.value)}
           placeholder="도시/숙소 추가"
-          disabled={adding}
+          disabled={adding || !online}
         />
         <div className="trip-add__row">
           <input
@@ -129,7 +129,7 @@ export function TripOverviewScreen() {
             value={newStart}
             onChange={(e) => setNewStart(e.target.value)}
             onClick={(e) => e.currentTarget.showPicker?.()}
-            disabled={adding}
+            disabled={adding || !online}
           />
           <span>~</span>
           <input
@@ -137,11 +137,11 @@ export function TripOverviewScreen() {
             value={newEnd}
             onChange={(e) => setNewEnd(e.target.value)}
             onClick={(e) => e.currentTarget.showPicker?.()}
-            disabled={adding}
+            disabled={adding || !online}
           />
           <button
             type="submit"
-            disabled={adding || !newPlace.trim() || !newStart || !newEnd}
+            disabled={adding || !online || !newPlace.trim() || !newStart || !newEnd}
             aria-label="추가"
           >
             +

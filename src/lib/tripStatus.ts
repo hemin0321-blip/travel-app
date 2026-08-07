@@ -23,3 +23,13 @@ export function findCurrentSegment(segments: Segment[], today: Date): Segment | 
     return now >= start && now <= end;
   });
 }
+
+// Used by the Today screen's empty state — when nothing is happening today
+// (the trip hasn't started, or a gap between segments), showing what's next
+// is more useful than a bare "nothing today", the way a calendar app would.
+export function findNextSegment(segments: Segment[], today: Date): Segment | undefined {
+  const now = atMidnight(today);
+  return segments
+    .filter((s) => atMidnight(new Date(s.startDate)) > now)
+    .sort((a, b) => a.startDate.localeCompare(b.startDate))[0];
+}

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { SheetsClient } from "../../lib/sheets/client";
 import { itineraryItemToRow } from "../../lib/sheets/parse";
 import { useAuth } from "../../auth/GoogleAuthContext";
+import { useOnlineStatus } from "../../hooks/useOnlineStatus";
 import { ErrorBanner } from "../../components/ErrorBanner";
 
 const CATEGORIES = ["숙소", "식당", "관광", "주차", "이동", "기타"];
@@ -11,6 +12,7 @@ export function ItineraryItemFormScreen() {
   const { segmentId } = useParams<{ segmentId: string }>();
   const navigate = useNavigate();
   const { getValidToken, signIn } = useAuth();
+  const online = useOnlineStatus();
   const [placeName, setPlaceName] = useState("");
   const [address, setAddress] = useState("");
   const [transport, setTransport] = useState("");
@@ -49,6 +51,7 @@ export function ItineraryItemFormScreen() {
 
   return (
     <form className="entity-form" onSubmit={handleSubmit}>
+      {!online && <p className="offline-banner">오프라인입니다 · 온라인에서 저장할 수 있어요</p>}
       {error === "auth" && (
         <ErrorBanner message="로그인이 만료됐어요, 다시 로그인 해주세요" actionLabel="다시 로그인" onAction={signIn} />
       )}
@@ -85,7 +88,7 @@ export function ItineraryItemFormScreen() {
         순서
         <input type="number" min={1} value={order} onChange={(e) => setOrder(Number(e.target.value))} required />
       </label>
-      <button type="submit" disabled={saving}>{saving ? "저장 중..." : "저장"}</button>
+      <button type="submit" disabled={saving || !online}>{saving ? "저장 중..." : "저장"}</button>
     </form>
   );
 }

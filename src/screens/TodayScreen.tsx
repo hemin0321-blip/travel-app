@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { SheetsClient } from "../lib/sheets/client";
 import { parseSegments, parseItineraryItems } from "../lib/sheets/parse";
-import { findCurrentSegment } from "../lib/tripStatus";
+import { findCurrentSegment, findNextSegment } from "../lib/tripStatus";
 import type { ItineraryItem, Segment } from "../types/trip";
 import { useAuth } from "../auth/GoogleAuthContext";
 import { useOnlineStatus } from "../hooks/useOnlineStatus";
@@ -72,7 +72,9 @@ export function TodayScreen() {
     };
   }, [tripId, online, getValidToken]);
 
-  const current = findCurrentSegment(segments, new Date());
+  const today = new Date();
+  const current = findCurrentSegment(segments, today);
+  const next = current ? undefined : findNextSegment(segments, today);
   const todaysItems = current ? items.filter((i) => i.segmentId === current.segmentId) : [];
 
   return (
@@ -87,7 +89,17 @@ export function TodayScreen() {
         />
       )}
       {error === "fetch" && <ErrorBanner message="일정을 불러오지 못했어요" />}
-      {current ? <Timeline items={todaysItems} /> : <p>오늘에 해당하는 구간이 없습니다.</p>}
+      {current && <Timeline items={todaysItems} />}
+      {!current && next && (
+        <p className="trip-list__empty">
+          오늘은 일정이 없어요. 다음 일정은{" "}
+          <Link to={`/trips/${tripId}/segments/${next.segmentId}`}>
+            {next.place} ({next.startDate}~)
+          </Link>
+          {" "}이에요.
+        </p>
+      )}
+      {!current && !next && <p className="trip-list__empty">오늘에 해당하는 구간이 없습니다.</p>}
     </div>
   );
 }
